@@ -1,0 +1,32 @@
+name: twilio_conversations
+description: A flutter plugin for Twilio Conversations.
+version: 0.1.0
+homepage: https://gitlab.com/twilio-flutter/conversations
+repository: https://gitlab.com/twilio-flutter/conversations
+issue_tracker: https://gitlab.com/twilio-flutter/conversations/issues
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+  flutter: ">=1.20.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  build_runner: ^1.10.9
+  enum_to_string: ^1.0.14
+  json_annotation: ^3.1.1
+  json_serializable: ^3.5.1
+  mime_type: ^0.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: twilio.flutter.twilio_conversations
+        pluginClass: TwilioConversationsPlugin
+      ios:
+        pluginClass: TwilioConversationsPlugin

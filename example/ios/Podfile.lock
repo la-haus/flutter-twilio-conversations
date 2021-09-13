@@ -1,0 +1,29 @@
+PODS:
+  - Flutter (1.0.0)
+  - twilio_conversations (0.0.1):
+    - Flutter
+    - TwilioConversationsClient (~> 1.1)
+  - TwilioConversationsClient (1.3.1)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - twilio_conversations (from `.symlinks/plugins/twilio_conversations/ios`)
+
+SPEC REPOS:
+  trunk:
+    - TwilioConversationsClient
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  twilio_conversations:
+    :path: ".symlinks/plugins/twilio_conversations/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  twilio_conversations: 8c4fa7dec9657b028083754144f8b67cd0d337aa
+  TwilioConversationsClient: 10e017b8ef6e6286b444222fffac02914df85b9d
+
+PODFILE CHECKSUM: 7368163408c647b7eb699d0d788ba6718e18fb8d
+
+COCOAPODS: 1.10.1

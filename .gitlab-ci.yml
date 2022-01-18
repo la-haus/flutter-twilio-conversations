@@ -100,9 +100,6 @@ dry-run:
   only:
     refs:
       - merge_requests
-    changes:
-      - /**/*
-      - .gitlab-ci.yml
 
 pub-dev:
   # https://robertohuertas.com/2019/01/20/publish-flutter-package-with-travis/

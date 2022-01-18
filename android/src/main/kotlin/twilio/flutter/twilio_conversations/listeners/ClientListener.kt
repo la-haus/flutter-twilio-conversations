@@ -1,119 +1,115 @@
 package twilio.flutter.twilio_conversations.listeners
 
-import com.google.gson.Gson
-import com.twilio.conversations.*
-import io.flutter.plugin.common.EventChannel
+import com.twilio.conversations.Conversation
+import com.twilio.conversations.ConversationsClient
+import com.twilio.conversations.ConversationsClientListener
+import com.twilio.conversations.ErrorInfo
+import com.twilio.conversations.User
+import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
 class ClientListener : ConversationsClientListener {
-    var events: EventChannel.EventSink? = null
-
-    fun onListen() {
-        sendEvent("clientListenerAttached")
-    }
+    private val TAG = "ClientListener"
 
     override fun onClientSynchronization(status: ConversationsClient.SynchronizationStatus) {
-        TwilioConversationsPlugin.debug("ClientListener.onClientSynchronization => status = $status")
-        sendEvent("clientSynchronization", mapOf("synchronizationStatus" to status.toString()))
+        debug("onClientSynchronization => status = $status")
+        TwilioConversationsPlugin.flutterClientApi.clientSynchronization(status.toString()) {}
     }
 
     override fun onConversationSynchronizationChange(conversation: Conversation) {
-        TwilioConversationsPlugin.debug("ClientListener.onConversationSynchronizationChange => sid = ${conversation.sid}")
-        sendEvent("conversationSynchronizationChange", mapOf("conversation" to Mapper.conversationToMap(conversation)))
+        debug("onConversationSynchronizationChange => sid = ${conversation.sid}")
+        TwilioConversationsPlugin.flutterClientApi.conversationSynchronizationChange(Mapper.conversationToPigeon(conversation)) {}
     }
 
     override fun onNotificationSubscribed() {
-        TwilioConversationsPlugin.debug("ClientListener.onNotificationSubscribed")
-        sendEvent("notificationSubscribed")
+        debug("onNotificationSubscribed")
+        TwilioConversationsPlugin.flutterClientApi.notificationSubscribed { }
     }
 
     override fun onUserSubscribed(user: User?) {
-        TwilioConversationsPlugin.debug("ClientListener.onUserSubscribed => user '${user?.friendlyName}'")
-        sendEvent("userSubscribed", mapOf("user" to Mapper.userToMap(user)))
+        user ?: return
+        debug("onUserSubscribed => user '${user?.identity}'")
+        TwilioConversationsPlugin.flutterClientApi.userSubscribed(Mapper.userToPigeon(user)) {}
     }
 
     override fun onUserUnsubscribed(user: User?) {
-        TwilioConversationsPlugin.debug("ClientListener.onUserUnsubscribed => user '${user?.friendlyName}'")
-        sendEvent("userUnsubscribed", mapOf("user" to Mapper.userToMap(user)))
+        user ?: return
+        debug("onUserUnsubscribed => user '${user?.identity}'")
+        TwilioConversationsPlugin.flutterClientApi.userUnsubscribed(Mapper.userToPigeon(user)) {}
     }
 
     override fun onUserUpdated(user: User?, reason: User.UpdateReason?) {
-        TwilioConversationsPlugin.debug("ClientListener.onUserUpdated => user '${user?.friendlyName}' updated, $reason")
-        sendEvent("userUpdated", mapOf(
-                "user" to Mapper.userToMap(user),
-                "reason" to mapOf(
-                        "type" to "user",
-                        "value" to reason.toString()
-                )
-        ))
+        user ?: return
+        reason ?: return
+        debug("onUserUpdated => user '${user?.identity}' updated, $reason")
+        TwilioConversationsPlugin.flutterClientApi.userUpdated(Mapper.userToPigeon(user), reason.toString()) {}
     }
 
     override fun onNotificationFailed(errorInfo: ErrorInfo?) {
-        sendEvent("notificationFailed", null, errorInfo)
+        errorInfo ?: return
+        TwilioConversationsPlugin.flutterClientApi.notificationFailed(Mapper.errorInfoToPigeon(errorInfo)) {}
     }
 
     override fun onTokenExpired() {
-        TwilioConversationsPlugin.debug("ClientListener.onTokenExpired")
-        sendEvent("tokenExpired")
+        debug("onTokenExpired")
+        TwilioConversationsPlugin.flutterClientApi.tokenExpired { }
     }
 
     override fun onConversationUpdated(conversation: Conversation?, reason: Conversation.UpdateReason?) {
-        TwilioConversationsPlugin.debug("ClientListener.onConversationUpdated => conversation '${conversation?.sid}' updated, $reason")
-        sendEvent("conversationUpdated", mapOf(
-                "conversation" to Mapper.conversationToMap(conversation),
-                "reason" to mapOf(
-                        "type" to "conversation",
-                        "value" to reason.toString()
-                )
-        ))
+        debug("onConversationUpdated => conversation '${conversation?.sid}' updated, $reason")
+        val event = Api.ConversationUpdatedData()
+        event.conversation = Mapper.conversationToPigeon(conversation)
+        event.reason = reason?.toString()
+        TwilioConversationsPlugin.flutterClientApi.conversationUpdated(event) {}
     }
 
     override fun onConversationAdded(conversation: Conversation) {
-        TwilioConversationsPlugin.debug("ClientListener.onConversationAdded => sid = ${conversation.sid}")
-        sendEvent("conversationAdded", mapOf("conversation" to Mapper.conversationToMap(conversation)))
+        debug("onConversationAdded => sid = ${conversation.sid}")
+        TwilioConversationsPlugin.flutterClientApi.conversationAdded(Mapper.conversationToPigeon(conversation)) {}
     }
 
     override fun onNewMessageNotification(conversationSid: String?, messageSid: String?, messageIndex: Long) {
-        TwilioConversationsPlugin.debug("ClientListener.onNewMessageNotification => conversationSid = $conversationSid, messageSid = $messageSid, messageIndex = $messageIndex")
-        sendEvent("newMessageNotification", mapOf(
-                "conversationSid" to conversationSid,
-                "messageSid" to messageSid,
-                "messageIndex" to messageIndex
-        ))
+        conversationSid ?: return
+        debug("onNewMessageNotification => conversationSid = $conversationSid, messageSid = $messageSid, messageIndex = $messageIndex")
+        TwilioConversationsPlugin.flutterClientApi.newMessageNotification(conversationSid, messageIndex) {}
     }
 
     override fun onAddedToConversationNotification(conversationSid: String?) {
-        TwilioConversationsPlugin.debug("ClientListener.onAddedToConversationNotification => conversationSid = $conversationSid")
-        sendEvent("addedToConversationNotification", mapOf("conversationSid" to conversationSid))
+        conversationSid ?: return
+        debug("onAddedToConversationNotification => conversationSid = $conversationSid")
+        TwilioConversationsPlugin.flutterClientApi.addedToConversationNotification(conversationSid) {}
     }
 
     override fun onConnectionStateChange(state: ConversationsClient.ConnectionState) {
-        TwilioConversationsPlugin.debug("ClientListener.onConnectionStateChange => state = $state")
-        sendEvent("connectionStateChange", mapOf("connectionState" to state.toString()))
+        debug("onConnectionStateChange => state = $state")
+        TwilioConversationsPlugin.flutterClientApi.connectionStateChange(state.toString()) {}
     }
 
     override fun onError(errorInfo: ErrorInfo?) {
-        sendEvent("error", null, errorInfo)
+        if (errorInfo == null) {
+            return
+        }
+        TwilioConversationsPlugin.flutterClientApi.error(Mapper.errorInfoToPigeon(errorInfo)) {}
     }
 
     override fun onConversationDeleted(conversation: Conversation) {
-        TwilioConversationsPlugin.debug("ClientListener.onConversationDeleted => sid = ${conversation.sid}")
-        sendEvent("conversationDeleted", mapOf("conversation" to Mapper.conversationToMap(conversation)))
+        debug("onConversationDeleted => sid = ${conversation.sid}")
+        TwilioConversationsPlugin.flutterClientApi.conversationDeleted(Mapper.conversationToPigeon(conversation)) {}
     }
 
     override fun onRemovedFromConversationNotification(conversationSid: String?) {
-        TwilioConversationsPlugin.debug("ClientListener.onRemovedFromConversationNotification => conversationSid = $conversationSid")
-        sendEvent("removedFromConversationNotification", mapOf("conversationSid" to conversationSid))
+        debug("onRemovedFromConversationNotification => conversationSid = $conversationSid")
+        conversationSid ?: return
+        TwilioConversationsPlugin.flutterClientApi.removedFromConversationNotification(conversationSid) {}
     }
 
     override fun onTokenAboutToExpire() {
-        TwilioConversationsPlugin.debug("ClientListener.onTokenAboutToExpire")
-        sendEvent("tokenAboutToExpire")
+        debug("onTokenAboutToExpire")
+        TwilioConversationsPlugin.flutterClientApi.tokenAboutToExpire { }
     }
 
-    private fun sendEvent(name: String, data: Any? = null, e: ErrorInfo? = null) {
-        val eventData = Gson().toJson(mapOf("name" to name, "data" to data, "error" to Mapper.errorInfoToMap(e)))
-        events?.success(eventData)
+    fun debug(message: String) {
+        TwilioConversationsPlugin.debug("$TAG::$message")
     }
 }

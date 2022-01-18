@@ -31,6 +31,8 @@
 .pub/
 /build/
 
+lib/services/backend_service.dart
+
 # Web related
 lib/generated_plugin_registrant.dart
 

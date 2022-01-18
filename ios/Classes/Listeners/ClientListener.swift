@@ -1,145 +1,224 @@
 import TwilioConversationsClient
 
 public class ClientListener: NSObject, TwilioConversationsClientDelegate {
-    public var events: FlutterEventSink?
-
-    public var client: TwilioConversationsClient?
-    
-    public func onListen() {
-        sendEvent("clientListenerAttached")
-    }
+    let TAG = "ClientListener"
 
     // onAddedToConversation Notification
-    public func conversationsClient(_ client: TwilioConversationsClient, notificationAddedToConversationWithSid conversationSid: String) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onAddedToConversationNotification => conversationSid is \(conversationSid)'")
-        sendEvent("addedToConversationNotification", data: ["conversationSid": conversationSid])
+    public func conversationsClient(
+        _ client: TwilioConversationsClient,
+        notificationAddedToConversationWithSid conversationSid: String) {
+        debug("onAddedToConversationNotification => conversationSid is \(conversationSid)'")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.added(
+            toConversationNotificationConversationSid: conversationSid, completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onAddedToConversationNotification => "
+                            + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
     }
-    
+
     // onClientSynchronizationUpdated
-    public func conversationsClient(_ client: TwilioConversationsClient, synchronizationStatusUpdated status: TCHClientSynchronizationStatus) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onClientSynchronization => state is \(Mapper.clientSynchronizationStatusToString(status))")
-        sendEvent("clientSynchronization", data: ["synchronizationStatus": Mapper.clientSynchronizationStatusToString(status)])
+    public func conversationsClient(
+        _ client: TwilioConversationsClient,
+        synchronizationStatusUpdated status: TCHClientSynchronizationStatus) {
+        debug("onClientSynchronization => state is \(Mapper.clientSynchronizationStatusToString(status))")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.clientSynchronizationSynchronizationStatus(
+            Mapper.clientSynchronizationStatusToString(status), completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onClientSynchronization => "
+                            + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
     }
-    
+
     // onConnectionStateChange
-    public func conversationsClient(_ client: TwilioConversationsClient, connectionStateUpdated state: TCHClientConnectionState) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onConnectionStateChange => state is \(Mapper.clientConnectionStateToString(state))")
-        sendEvent("connectionStateChange", data: ["connectionState": Mapper.clientConnectionStateToString(state)])
+    public func conversationsClient(
+        _ client: TwilioConversationsClient,
+        connectionStateUpdated state: TCHClientConnectionState) {
+        debug("onConnectionStateChange => state is \(Mapper.clientConnectionStateToString(state))")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.connectionStateChangeConnectionState(
+            Mapper.clientConnectionStateToString(state), completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onConnectionStateChange => "
+                            + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
     }
 
     // onConversationAdded
-    public func conversationsClient(_ client: TwilioConversationsClient, conversationAdded conversation: TCHConversation) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onConversationAdded => conversationSid is \(String(describing: conversation.sid))'")
-        sendEvent("conversationAdded", data: ["conversation": Mapper.conversationToDict(conversation) as Any])
-    }
-    
-    // onConversationDeleted
-    public func conversationsClient(_ client: TwilioConversationsClient, conversationDeleted conversation: TCHConversation) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onConversationDeleted => conversationSid is \(String(describing: conversation.sid))'")
-        sendEvent("conversationDeleted", data: ["conversation": Mapper.conversationToDict(conversation) as Any])
-    }
-    
-    // onConversationSynchronizationChanged
-    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, synchronizationStatusUpdated status: TCHConversationSynchronizationStatus) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onConversationSynchronizationChange => conversationSid is '\(String(describing: conversation.sid))', syncStatus: \(Mapper.conversationSynchronizationStatusToString(conversation.synchronizationStatus))")
-        sendEvent("conversationSynchronizationChange", data: ["conversation": Mapper.conversationToDict(conversation) as Any])
-    }
-    
-    // onConversationUpdated
-    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, updated: TCHConversationUpdate) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.conversationUpdated => conversationSid is \(String(describing: conversation.sid)) updated, \(Mapper.conversationUpdateToString(updated))")
-        sendEvent("conversationUpdated", data: [
-            "conversation": Mapper.conversationToDict(conversation) as Any,
-            "reason": [
-                "type": "conversation",
-                "value": Mapper.conversationUpdateToString(updated)
-            ]
-        ])
-    }
-    
-    // onError
-    public func conversationsClient(_ client: TwilioConversationsClient, errorReceived error: TCHError) {
-        sendEvent("error", error: error)
-    }
-    
-    // onNewMessageNotification
-    public func conversationsClient(_ client: TwilioConversationsClient, notificationNewMessageReceivedForConversationSid conversationSid: String, messageIndex: UInt) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onNewMessageNotification => conversationSid: \(conversationSid), messageIndex: \(messageIndex)")
-        var messageSid: String = ""
-        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
-            if result.isSuccessful, let conversation = conversation {
-                conversation.message(withIndex: messageIndex as NSNumber, completion: { (result: TCHResult, message: TCHMessage?) in
-                    if result.isSuccessful, let sid = message?.sid {
-                        messageSid = sid
-                    }
-                })
-            }
+    public func conversationsClient(
+        _ client: TwilioConversationsClient,
+        conversationAdded conversation: TCHConversation) {
+        debug("onConversationAdded => conversation \(String(describing: conversation.sid))'")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.conversationAddedConversationData(
+            Mapper.conversationToPigeon(conversation)!, completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onConversationAdded => "
+                            + "Error calling FlutterClientApi: \(errorMessage)")
+                }
         })
-        sendEvent("newMessageNotification", data: [
-            "conversationSid": conversationSid,
-            "messageSid": messageSid,
-            "messageIndex": messageIndex
-        ])
     }
 
-    
+    // onConversationDeleted
+    public func conversationsClient(
+        _ client: TwilioConversationsClient,
+        conversationDeleted conversation: TCHConversation) {
+        debug("onConversationDeleted => conversation \(String(describing: conversation.sid))'")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.conversationDeletedConversationData(
+            Mapper.conversationToPigeon(conversation)!, completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onConversationDeleted => "
+                            + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
+    }
+
+    // onConversationSynchronizationChanged
+    public func conversationsClient(
+        _ client: TwilioConversationsClient,
+        conversation: TCHConversation,
+        synchronizationStatusUpdated status: TCHConversationSynchronizationStatus) {
+        debug("onConversationSynchronizationChange => conversationSid is '\(String(describing: conversation.sid))', "
+              + "syncStatus: \(Mapper.conversationSynchronizationStatusToString(conversation.synchronizationStatus))")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.conversationSynchronizationChange(
+            Mapper.conversationToPigeon(conversation)!, completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onConversationSynchronizationChange => "
+                        + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
+    }
+
+    // onConversationUpdated
+    public func conversationsClient(
+        _ client: TwilioConversationsClient,
+        conversation: TCHConversation,
+        updated: TCHConversationUpdate) {
+        debug("conversationUpdated => conversation "
+              + "\(String(describing: conversation.sid)) updated, \(Mapper.conversationUpdateToString(updated))")
+
+        let event = TWCONConversationUpdatedData()
+        event.conversation = Mapper.conversationToPigeon(conversation)
+        event.reason = Mapper.conversationUpdateToString(updated)
+
+        SwiftTwilioConversationsPlugin.flutterClientApi?.conversationUpdatedEvent(
+            event,
+            completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("conversationUpdated => "
+                            + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
+    }
+
+    // onError
+    public func conversationsClient(_ client: TwilioConversationsClient, errorReceived error: TCHError) {
+        debug("onError")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.errorErrorInfoData(
+            Mapper.errorToPigeon(error), completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onError => "
+                        + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
+    }
+
+    // onNewMessageNotification
+    public func conversationsClient(
+        _ client: TwilioConversationsClient,
+        notificationNewMessageReceivedForConversationSid conversationSid: String,
+        messageIndex: UInt) {
+        debug("onNewMessageNotification => conversationSid: \(conversationSid), messageIndex: \(messageIndex)")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.newMessageNotificationConversationSid(
+            conversationSid,
+            messageIndex: NSNumber(value: messageIndex),
+            completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onNewMessageNotification => "
+                        + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
+    }
+
     // onRemovedFromConversationNotification
-    public func conversationsClient(_ client: TwilioConversationsClient, notificationRemovedFromConversationWithSid conversationSid: String) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onRemovedFromConversationNotification => conversationSid: \(conversationSid)")
-        sendEvent("removedFromConversationNotification", data: ["conversationSid": conversationSid])
+    public func conversationsClient(
+        _ client: TwilioConversationsClient,
+        notificationRemovedFromConversationWithSid conversationSid: String) {
+        debug("onRemovedFromConversationNotification => conversationSid: \(conversationSid)")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.removed(
+            fromConversationNotificationConversationSid: conversationSid,
+            completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onRemovedFromConversationNotification => "
+                        + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
     }
 
     // onTokenExpired
     public func conversationsClientTokenExpired(_ client: TwilioConversationsClient) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onTokenExpired")
-        sendEvent("tokenExpired", data: nil)
-    }
-    
-    // onTokenAboutToExpire
-    public func conversationsClientTokenWillExpire(_ client: TwilioConversationsClient) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onTokenAboutToExpire")
-        sendEvent("tokenAboutToExpire", data: nil)
-    }
-    
-    // onUserSubscribed
-    public func conversationsClient(_ client: TwilioConversationsClient, userSubscribed user: TCHUser) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onUserSubscribed => user '\(String(describing: user.identity))'")
-        sendEvent("userSubscribed", data: ["user": Mapper.userToDict(user) as Any])
-    }
-    
-    // onUserUnsubscribed
-    public func conversationsClient(_ client: TwilioConversationsClient, userUnsubscribed user: TCHUser) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onUserUnsubscribed => user '\(String(describing: user.identity))'")
-        sendEvent("userUnsubscribed", data: ["user": Mapper.userToDict(user) as Any])
-    }
-    
-    // onUserUpdated
-    public func conversationsClient(_ client: TwilioConversationsClient, user: TCHUser, updated: TCHUserUpdate) {
-        SwiftTwilioConversationsPlugin.debug("ClientListener.onUserUpdated => user \(String(describing: user.identity)) updated, \(Mapper.userUpdateToString(updated))")
-        sendEvent("userUpdated", data: [
-            "user": Mapper.userToDict(user) as Any,
-            "reason": [
-                "type": "user",
-                "value": Mapper.userUpdateToString(updated)
-            ]
-        ])
+        debug("onTokenExpired")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.tokenExpired(
+            completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onTokenExpired => "
+                        + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
     }
 
-    private func errorToDict(_ error: Error?) -> [String: Any]? {
-        if let error = error as NSError? {
-            return [
-                "code": error.code,
-                "message": error.description
-            ]
-        }
-        return nil
+    // onTokenAboutToExpire
+    public func conversationsClientTokenWillExpire(_ client: TwilioConversationsClient) {
+        debug("onTokenAboutToExpire")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.tokenAboutToExpire(
+            completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onTokenAboutToExpire => "
+                        + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
     }
-    
-    private func sendEvent(_ name: String, data: [String: Any]? = nil, error: Error? = nil) {
-        let eventData = ["name": name, "data": data, "error": errorToDict(error)] as [String: Any?]
-        
-        if let events = events {
-            events(Mapper.encode(eventData))
-        }
+
+    // onUserSubscribed
+    public func conversationsClient(_ client: TwilioConversationsClient, userSubscribed user: TCHUser) {
+        debug("onUserSubscribed => user '\(String(describing: user.identity))'")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.userSubscribedUserData(
+            Mapper.userToPigeon(user)!, completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onUserSubscribed => "
+                        + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
+    }
+
+    // onUserUnsubscribed
+    public func conversationsClient(_ client: TwilioConversationsClient, userUnsubscribed user: TCHUser) {
+        debug("onUserUnsubscribed => user '\(String(describing: user.identity))'")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.userUnsubscribedUserData(
+            Mapper.userToPigeon(user)!, completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onUserUnsubscribed => "
+                        + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
+    }
+
+    // onUserUpdated
+    public func conversationsClient(_ client: TwilioConversationsClient, user: TCHUser, updated: TCHUserUpdate) {
+        debug("onUserUpdated => user \(String(describing: user.identity)) "
+              + "updated, \(Mapper.userUpdateToString(updated))")
+        SwiftTwilioConversationsPlugin.flutterClientApi?.userUpdatedUserData(
+            Mapper.userToPigeon(user)!,
+            reason: Mapper.userUpdateToString(updated),
+            completion: { (error: Error?) in
+                if let errorMessage = error {
+                    self.debug("onUserUpdated => "
+                        + "Error calling FlutterClientApi: \(errorMessage)")
+                }
+        })
+    }
+
+    private func debug(_ msg: String) {
+        SwiftTwilioConversationsPlugin.debug("\(TAG)::\(msg)")
     }
 }

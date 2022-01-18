@@ -17,3 +17,4 @@ dartdoc:
     - unknown-file
     - unknown-macro
     - unresolved-doc-reference
+  nodoc: [lib/api.dart]

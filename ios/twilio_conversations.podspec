@@ -16,7 +16,8 @@ A new flutter plugin project.
   s.source_files = 'Classes/**/*'
 
   s.dependency 'Flutter'
-  s.dependency 'TwilioConversationsClient', '~> 1.1'
+  s.dependency 'TwilioConversationsClient', '~> 1.3'
+  s.dependency 'SwiftyJSON', '~> 5.0.1'
 
   s.platform = :ios, '11.0'
 

@@ -48,12 +48,12 @@ kotlin_analyze:
       - .gitlab-ci.yml
 
 pod_lint:
-  image: ruby:2.7-slim-buster
+  image: ruby:3.0.2-slim-buster
   stage: lint
   script:
     - cd ios || exit 1
-    - apt-get update && apt-get install -y git curl unzip
-    - gem install cocoapods -v 1.8.4
+    - apt-get update && apt-get install -y rbenv git curl unzip
+    - gem install cocoapods -v 1.11.2
     - adduser --disabled-password --gecos "" cocoapods # Running as root is not allowed for CocoaPods
     - export RUBYOPT='-W0' # Disable ruby deprecation warnings
     - su cocoapods -c "pod lib lint --allow-warnings twilio_conversations.podspec"

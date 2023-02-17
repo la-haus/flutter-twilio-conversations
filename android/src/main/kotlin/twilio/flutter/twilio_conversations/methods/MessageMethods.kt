@@ -2,9 +2,13 @@ package twilio.flutter.twilio_conversations.methods
 
 import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
-import com.twilio.conversations.ErrorInfo
+import com.twilio.util.ErrorInfo
 import com.twilio.conversations.Message
 import com.twilio.conversations.StatusListener
+import com.twilio.conversations.extensions.getTemporaryContentUrlsForMedia
+import com.twilio.conversations.extensions.updateMessageBody
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
@@ -29,17 +33,17 @@ class MessageMethods : Api.MessageApi {
             override fun onSuccess(conversation: Conversation) {
                 conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
                     override fun onSuccess(message: Message) {
-                        message.getMediaContentTemporaryUrl(object : CallbackListener<String> {
-                            override fun onSuccess(url: String) {
-                                debug("getMediaContentTemporaryUrl => onSuccess $url")
-                                result.success(url)
-                            }
+                        if (message.attachedMedia.isEmpty()) {
+                            val error =
+                                NotFoundException("No media attached to message: $messageIndex.")
+                            return result.error(error)
+                        }
 
-                            override fun onError(errorInfo: ErrorInfo) {
-                                debug("getMediaContentTemporaryUrl => onError: $errorInfo")
-                                result.error(TwilioException(errorInfo.code, errorInfo.message))
-                            }
-                        })
+                        GlobalScope.launch {
+                            val urls = message.getTemporaryContentUrlsForMedia(message.attachedMedia)
+                            val url = urls[urls.keys.first()]
+                            result.success(url)
+                        }
                     }
 
                     override fun onError(errorInfo: ErrorInfo) {
@@ -146,17 +150,9 @@ class MessageMethods : Api.MessageApi {
             override fun onSuccess(conversation: Conversation) {
                 conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
                     override fun onSuccess(message: Message) {
-                        message.updateMessageBody(messageBody, object : StatusListener {
-                            override fun onSuccess() {
-                                debug("updateMessageBody => onSuccess")
-                                result.success(null)
-                            }
-
-                            override fun onError(errorInfo: ErrorInfo) {
-                                debug("updateMessageBody => onError: $errorInfo")
-                                result.error(TwilioException(errorInfo.code, errorInfo.message))
-                            }
-                        })
+                        // TODO: Handle error case
+                        GlobalScope.launch { message.updateMessageBody(messageBody) }
+                        result.success(null)
                     }
 
                     override fun onError(errorInfo: ErrorInfo) {

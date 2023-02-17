@@ -26,7 +26,8 @@ dependencies:
   http: ^0.13.3
   intl: ^0.17.0
   mime_type: ^1.0.0
-  firebase_messaging: ^10.0.8
+  firebase_core: 2.6.1
+  firebase_messaging: 14.2.4
   image_picker: ^0.8.4+2
 
 dev_dependencies:

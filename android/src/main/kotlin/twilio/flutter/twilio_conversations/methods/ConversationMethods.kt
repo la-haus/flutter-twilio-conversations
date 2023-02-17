@@ -1,9 +1,13 @@
 import com.twilio.conversations.Attributes
 import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
-import com.twilio.conversations.ErrorInfo
+import com.twilio.util.ErrorInfo
 import com.twilio.conversations.Message
 import com.twilio.conversations.StatusListener
+import com.twilio.conversations.extensions.addListener
+import com.twilio.conversations.extensions.sendMessage
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.FileInputStream
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
@@ -142,70 +146,66 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        val messageOptions = Message.options()
-        if (options.body != null) {
-            messageOptions.withBody(options.body as String)
-        }
-
-        if (options.attributes != null) {
-            messageOptions.withAttributes(
-                Mapper.pigeonToAttributes(options.attributes))
-        }
-
-        if (options.inputPath != null) {
-            val input = options.inputPath as String
-            val mimeType = options.mimeType as String?
-                ?: return result.error(MissingParameterException("Missing 'mimeType' in MessageOptions"))
-
-            messageOptions.withMedia(FileInputStream(input), mimeType)
-            if (options.filename != null) {
-                messageOptions.withMediaFileName(options.filename as String)
-            }
-
-            // TODO: implement MediaProgressListener
-//            if (options.mediaProgressListenerId != null) {
-//                messageOptions.withMediaProgressListener(object : ProgressListener() {
-//                    override fun onStarted() {
-//                        TwilioConversationsPlugin.mediaProgressSink?.success({
-//                            "mediaProgressListenerId" to options["mediaProgressListenerId"]
-//                            "name" to "started"
-//                        })
-//                    }
-//
-//                    override fun onProgress(bytes: Long) {
-//                        TwilioConversationsPlugin.mediaProgressSink?.success({
-//                            "mediaProgressListenerId" to options["mediaProgressListenerId"]
-//                            "name" to "progress"
-//                            "data" to bytes
-//                        })
-//                    }
-//
-//                    override fun onCompleted(mediaSid: String) {
-//                        TwilioConversationsPlugin.mediaProgressSink?.success({
-//                            "mediaProgressListenerId" to options["mediaProgressListenerId"]
-//                            "name" to "completed"
-//                            "data" to mediaSid
-//                        })
-//                    }
-//                })
-//            }
-        }
-
         try {
             client.getConversation(conversationSid, object : CallbackListener<Conversation> {
                 override fun onSuccess(conversation: Conversation) {
-                    conversation.sendMessage(messageOptions, object : CallbackListener<Message> {
-                        override fun onSuccess(message: Message) {
-                            debug("sendMessage => onSuccess")
-                            val messageData = Mapper.messageToPigeon(message)
-                            result.success(messageData)
+                    GlobalScope.launch {
+                        val message = conversation.sendMessage {
+                            if (options.body != null) {
+                                this.body = options.body as String
+
+                                val mappedAttributes = Mapper.pigeonToAttributes(options.attributes)
+                                if (mappedAttributes != null) {
+                                    this.attributes = mappedAttributes
+                                }
+
+                                if (options.inputPath != null) {
+                                    if (options.filename.isNotBlank()) {
+                                        addMedia(
+                                            FileInputStream(options.inputPath),
+                                            options.mimeType,
+                                            options.filename
+                                        )
+                                    } else {
+                                        addMedia(
+                                            FileInputStream(options.inputPath), options.mimeType)
+                                    }
+
+                                    // TODO: implement MediaProgressListener
+                                    //            if (options.mediaProgressListenerId != null) {
+                                    //                messageOptions.withMediaProgressListener(object : ProgressListener() {
+                                    //                    override fun onStarted() {
+                                    //                        TwilioConversationsPlugin.mediaProgressSink?.success({
+                                    //                            "mediaProgressListenerId" to options["mediaProgressListenerId"]
+                                    //                            "name" to "started"
+                                    //                        })
+                                    //                    }
+                                    //
+                                    //                    override fun onProgress(bytes: Long) {
+                                    //                        TwilioConversationsPlugin.mediaProgressSink?.success({
+                                    //                            "mediaProgressListenerId" to options["mediaProgressListenerId"]
+                                    //                            "name" to "progress"
+                                    //                            "data" to bytes
+                                    //                        })
+                                    //                    }
+                                    //
+                                    //                    override fun onCompleted(mediaSid: String) {
+                                    //                        TwilioConversationsPlugin.mediaProgressSink?.success({
+                                    //                            "mediaProgressListenerId" to options["mediaProgressListenerId"]
+                                    //                            "name" to "completed"
+                                    //                            "data" to mediaSid
+                                    //                        })
+                                    //                    }
+                                    //                })
+                                    //            }
+                                }
+                            }
                         }
 
-                        override fun onError(errorInfo: ErrorInfo) {
-                            debug("sendMessage => onError: $errorInfo")
-                            result.error(TwilioException(errorInfo.code, errorInfo.message))
-                        }
-                    })
+                        debug("sendMessage => onSuccess")
+                        val messageData = Mapper.messageToPigeon(message)
+                        result.success(messageData)
+                    }
                 }
 
                 override fun onError(errorInfo: ErrorInfo) {

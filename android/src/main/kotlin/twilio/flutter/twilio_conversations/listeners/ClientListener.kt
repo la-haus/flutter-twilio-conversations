@@ -3,7 +3,7 @@ package twilio.flutter.twilio_conversations.listeners
 import com.twilio.conversations.Conversation
 import com.twilio.conversations.ConversationsClient
 import com.twilio.conversations.ConversationsClientListener
-import com.twilio.conversations.ErrorInfo
+import com.twilio.util.ErrorInfo
 import com.twilio.conversations.User
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper

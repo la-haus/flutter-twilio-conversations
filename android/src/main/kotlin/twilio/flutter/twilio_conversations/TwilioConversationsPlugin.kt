@@ -23,6 +23,7 @@ class TwilioConversationsPlugin : FlutterPlugin {
         @Suppress("unused")
         @JvmStatic
         lateinit var instance: TwilioConversationsPlugin
+        private var initialized = false
 
         // Flutter > Host APIs
         @JvmStatic
@@ -77,6 +78,14 @@ class TwilioConversationsPlugin : FlutterPlugin {
     }
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        if (initialized) {
+            Log.d(LOG_TAG, "TwilioConversationsPlugin.onAttachedToEngine: already initialized")
+            return
+        } else {
+            Log.d(LOG_TAG, "TwilioConversationsPlugin.onAttachedToEngine")
+        }
+
+        initialized = true
         instance = this
         messenger = flutterPluginBinding.binaryMessenger
         applicationContext = flutterPluginBinding.applicationContext

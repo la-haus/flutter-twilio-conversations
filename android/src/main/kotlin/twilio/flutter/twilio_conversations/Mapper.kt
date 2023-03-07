@@ -1,12 +1,6 @@
 package twilio.flutter.twilio_conversations
 
-import com.twilio.conversations.Attributes
-import com.twilio.conversations.Conversation
-import com.twilio.conversations.ConversationsClient
-import com.twilio.conversations.ErrorInfo
-import com.twilio.conversations.Message
-import com.twilio.conversations.Participant
-import com.twilio.conversations.User
+import com.twilio.conversations.*
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.json.JSONArray
@@ -64,9 +58,13 @@ object Mapper {
         if (conversation == null) return null
 
         // Setting flutter event listener for the given channel if one does not yet exist.
-        if (conversation.sid != null && !TwilioConversationsPlugin.conversationListeners.containsKey(conversation.sid)) {
+        if (conversation.sid != null && !TwilioConversationsPlugin.conversationListeners.containsKey(
+                conversation.sid
+            )
+        ) {
             debug("setupConversationListener => conversation: ${conversation.sid}")
-            TwilioConversationsPlugin.conversationListeners[conversation.sid] = ConversationListener(conversation.sid)
+            TwilioConversationsPlugin.conversationListeners[conversation.sid] =
+                ConversationListener(conversation.sid)
             conversation.addListener(TwilioConversationsPlugin.conversationListeners[conversation.sid])
         }
 
@@ -123,7 +121,7 @@ object Mapper {
             return null
         }
         val result = Api.ParticipantData()
-                result.sid = participant.sid
+        result.sid = participant.sid
         result.conversationSid = participant.conversation.sid
         result.lastReadMessageIndex = participant.lastReadMessageIndex
         result.lastReadTimestamp = participant.lastReadTimestamp
@@ -132,6 +130,20 @@ object Mapper {
         result.identity = participant.identity
         result.type = participant.type.toString()
         result.attributes = attributesToPigeon(participant.attributes)
+        return result
+    }
+
+    fun aggregatedDeliveryReceiptToPigeon(aggregatedDeliveryReceipt: AggregatedDeliveryReceipt?): Api.DeliveryReceiptData? {
+        if (aggregatedDeliveryReceipt == null) {
+            return null
+        }
+        val result = Api.DeliveryReceiptData()
+        result.total = aggregatedDeliveryReceipt.total.toLong()
+        result.delivered = aggregatedDeliveryReceipt.delivered.toString()
+        result.read = aggregatedDeliveryReceipt.read.toString()
+        result.failed = aggregatedDeliveryReceipt.failed.toString()
+        result.sent = aggregatedDeliveryReceipt.sent.toString()
+        result.undelivered = aggregatedDeliveryReceipt.undelivered.toString()
         return result
     }
 

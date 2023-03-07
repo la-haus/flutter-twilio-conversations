@@ -1,6 +1,7 @@
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
+import 'package:twilio_conversations/src/message/delivery_receipt.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Message {
@@ -14,6 +15,7 @@ class Message {
   final MessageMedia? media;
   final String conversationSid;
   final String? participantSid;
+
   //TODO: review including Participant - as we are not maintaining a collection of them at the dart layer that we would want to update, simply constructing one may be sufficient. This should continue to remain the case so long as we are not distributing events via a Participant instance
   // final Participant? participant;
   final DateTime? dateCreated;
@@ -133,6 +135,20 @@ class Message {
       throw TwilioConversations.convertException(err);
     }
   }
-  //TODO: implement getAggregatedDeliveryReceipt
-  //TODO: implement getDetailedDeliveryReceiptList
+
+  Future<DeliveryReceipt?> getDeliveryReceipt() async {
+    try {
+      final result = await TwilioConversations()
+          .messageApi
+          .getAggregatedDeliveryReceipt(conversationSid, messageIndex!);
+
+      final deliveryReceipt = DeliveryReceipt.fromPigeon(result);
+
+      return deliveryReceipt;
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
+//TODO: implement getDetailedDeliveryReceiptList
 }

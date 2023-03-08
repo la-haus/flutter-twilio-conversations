@@ -33,4 +33,9 @@ class DeliveryReceipt {
     );
     return deliveryReceipt;
   }
+
+  @override
+  String toString() {
+    return 'DeliveryReceipt{total: $total, read: $read, undelivered: $undelivered, delivered: $delivered, failed: $failed, sent: $sent}';
+  }
 }

@@ -33,12 +33,12 @@ object Mapper {
                 result = Attributes()
             "NUMBER" -> {
                 val number: Number =
-                    if (pigeon.data.contains('.')) pigeon.data.toFloat()
-                    else pigeon.data.toInt()
+                    if (pigeon.data!!.contains('.')) pigeon.data!!.toFloat()
+                    else pigeon.data!!.toInt()
                 result = Attributes(number)
             }
             "STRING" ->
-                result = Attributes(pigeon.data)
+                result = pigeon.data?.let { Attributes(it) }
             "OBJECT" ->
                 result = Attributes(JSONObject(pigeon.data))
             "ARRAY" ->

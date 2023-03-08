@@ -149,7 +149,7 @@ class ConversationMethods : Api.ConversationApi {
 
         if (options.attributes != null) {
             messageOptions.withAttributes(
-                Mapper.pigeonToAttributes(options.attributes))
+                Mapper.pigeonToAttributes(options.attributes!!))
         }
 
         if (options.inputPath != null) {

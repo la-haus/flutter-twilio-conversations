@@ -176,4 +176,43 @@ class MessageMethods : Api.MessageApi {
     fun debug(message: String) {
         TwilioConversationsPlugin.debug("$TAG::$message")
     }
+
+    override fun getAggregatedDeliveryReceipt(
+        conversationSid: String,
+        messageIndex: Long,
+        result: Api.Result<Api.DeliveryReceiptData>
+    ) {
+        debug("getAggregatedDeliveryReceipt => conversationSid: $conversationSid messageIndex: $messageIndex")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(ClientNotInitializedException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
+                    override fun onSuccess(message: Message) {
+                        val aggregatedDeliveryReceipt =
+                            message.aggregatedDeliveryReceipt ?: return result.error(
+                                NotFoundException("AggregatedDeliveryReceipt not found for message: $messageIndex.")
+                            )
+                        debug("getAggregatedDeliveryReceipt => onSuccess")
+                        return result.success(
+                            Mapper.aggregatedDeliveryReceiptToPigeon(
+                                aggregatedDeliveryReceipt
+                            )
+                        )
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("getAggregatedDeliveryReceipt => onError: $errorInfo")
+                        result.error(TwilioException(errorInfo.code, errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("getMediaContentTemporaryUrl => onError: $errorInfo")
+                result.error(TwilioException(errorInfo.code, errorInfo.message))
+            }
+        })
+    }
 }

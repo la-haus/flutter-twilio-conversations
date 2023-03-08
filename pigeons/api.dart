@@ -82,6 +82,15 @@ class ParticipantData {
   String? lastReadTimestamp;
 }
 
+class DeliveryReceiptData {
+  int? total;
+  String? read;
+  String? undelivered;
+  String? delivered;
+  String? failed;
+  String? sent;
+}
+
 class UserData {
   String? identity;
   AttributesData? attributes;
@@ -258,6 +267,10 @@ abstract class MessageApi {
   @async
   void updateMessageBody(
       String conversationSid, int messageIndex, String messageBody);
+
+  @async
+  DeliveryReceiptData getAggregatedDeliveryReceipt(
+      String conversationSid, int messageIndex);
 }
 
 @HostApi()

@@ -154,21 +154,24 @@ class ConversationMethods : Api.ConversationApi {
                             if (options.body != null) {
                                 this.body = options.body as String
 
-                                val mappedAttributes = Mapper.pigeonToAttributes(options.attributes!!)
-                                if (mappedAttributes != null) {
-                                    this.attributes = mappedAttributes
+                                val attributes = options.attributes
+                                if (attributes != null) {
+                                    val mappedAttributes = Mapper.pigeonToAttributes(attributes)
+                                    if (mappedAttributes != null) {
+                                        this.attributes = mappedAttributes
+                                    }
                                 }
 
                                 if (options.inputPath != null) {
-                                    if (options.filename.isNotBlank()) {
+                                    if (options.filename?.isNotBlank() == true) {
                                         addMedia(
-                                            FileInputStream(options.inputPath),
-                                            options.mimeType,
+                                            FileInputStream(options.inputPath!!),
+                                            options.mimeType!!,
                                             options.filename
                                         )
                                     } else {
                                         addMedia(
-                                            FileInputStream(options.inputPath), options.mimeType)
+                                            FileInputStream(options.inputPath!!), options.mimeType!!)
                                     }
 
                                     // TODO: implement MediaProgressListener

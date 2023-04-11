@@ -178,12 +178,14 @@ object Mapper {
             return null
         }
 
-        val media = message.attachedMedia.first()
         val result = Api.MessageMediaData()
+
+        val media = message.attachedMedia.first()
         result.sid = media.sid
         result.fileName = media.filename
         result.type = media.contentType
         result.size = media.size
+
         result.conversationSid = message.conversationSid
         result.messageIndex = message.messageIndex
         result.messageSid = message.sid

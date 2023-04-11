@@ -105,7 +105,7 @@ object Mapper {
         result.participantSid = message.participantSid
 //        result.participant = participantToMap(message.participant)
         result.messageIndex = message.messageIndex
-        result.type = message.attributes.type.toString()
+        result.type = if (hasMedia) "MEDIA" else "TEXT"
         result.media = mediaToPigeon(message)
         result.hasMedia = hasMedia
         result.attributes = attributesToPigeon(message.attributes)
@@ -174,11 +174,12 @@ object Mapper {
     fun mediaToPigeon(message: Message): Api.MessageMediaData? {
         // TODO: Support Multiple files
         val hasMedia = message.attachedMedia.isNotEmpty()
-        if (!hasMedia) {
-            return null
-        }
+        if (!hasMedia) return null
 
         val result = Api.MessageMediaData()
+        result.conversationSid = message.conversationSid
+        result.messageIndex = message.messageIndex
+        result.messageSid = message.sid
 
         val media = message.attachedMedia.first()
         result.sid = media.sid
@@ -186,9 +187,6 @@ object Mapper {
         result.type = media.contentType
         result.size = media.size
 
-        result.conversationSid = message.conversationSid
-        result.messageIndex = message.messageIndex
-        result.messageSid = message.sid
         return result
     }
 

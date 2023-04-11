@@ -1,10 +1,8 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.twilio.conversations.CallbackListener
-import com.twilio.conversations.Conversation
+import com.twilio.conversations.*
 import com.twilio.util.ErrorInfo
-import com.twilio.conversations.Message
-import com.twilio.conversations.StatusListener
+import com.twilio.conversations.extensions.getTemporaryContentUrl
 import com.twilio.conversations.extensions.getTemporaryContentUrlsForMedia
 import com.twilio.conversations.extensions.updateMessageBody
 import kotlinx.coroutines.GlobalScope
@@ -33,17 +31,28 @@ class MessageMethods : Api.MessageApi {
             override fun onSuccess(conversation: Conversation) {
                 conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
                     override fun onSuccess(message: Message) {
+                        debug("getMediaContentTemporaryUrl => onSuccess: ${message.attachedMedia}")
+
                         if (message.attachedMedia.isEmpty()) {
-                            val error =
-                                NotFoundException("No media attached to message: $messageIndex.")
-                            return result.error(error)
+                            return result.error(NotFoundException("No media attached to message"))
                         }
 
-                        GlobalScope.launch {
-                            val urls = message.getTemporaryContentUrlsForMedia(message.attachedMedia)
-                            val url = urls[urls.keys.first()]
-                            result.success(url)
-                        }
+                        // TODO: Add support for multiple media
+                        val media = message.attachedMedia.first()
+
+                        media.getTemporaryContentUrl(
+                            object : CallbackListener<String> {
+                                override fun onSuccess(url: String?) {
+                                    debug("getMediaContentTemporaryUrl => onSuccess: $url")
+                                    result.success(url)
+                                }
+
+                                override fun onError(errorInfo: ErrorInfo) {
+                                    debug("getMediaContentTemporaryUrl => onError: $errorInfo")
+                                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                                }
+                            }
+                        )
                     }
 
                     override fun onError(errorInfo: ErrorInfo) {

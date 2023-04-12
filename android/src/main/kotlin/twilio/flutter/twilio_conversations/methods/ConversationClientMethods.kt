@@ -3,7 +3,7 @@ package twilio.flutter.twilio_conversations.methods
 import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
 import com.twilio.conversations.ConversationsClient
-import com.twilio.conversations.ErrorInfo
+import com.twilio.util.ErrorInfo
 import com.twilio.conversations.StatusListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

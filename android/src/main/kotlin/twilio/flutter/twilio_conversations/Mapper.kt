@@ -1,6 +1,7 @@
 package twilio.flutter.twilio_conversations
 
 import com.twilio.conversations.*
+import com.twilio.util.ErrorInfo
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.json.JSONArray
@@ -91,20 +92,22 @@ object Mapper {
     fun messageToPigeon(message: Message): Api.MessageData {
         val result = Api.MessageData()
 
+        val hasMedia = message.attachedMedia.isNotEmpty()
+
         result.sid = message.sid
         result.author = message.author
         result.dateCreated = dateToString(message.dateCreatedAsDate)
         result.dateUpdated = dateToString(message.dateUpdatedAsDate)
         result.lastUpdatedBy = message.lastUpdatedBy
         result.subject = message.subject
-        result.messageBody = message.messageBody
+        result.messageBody = message.body
         result.conversationSid = message.conversation.sid
         result.participantSid = message.participantSid
 //        result.participant = participantToMap(message.participant)
         result.messageIndex = message.messageIndex
-        result.type = message.type.toString()
+        result.type = if (hasMedia) "MEDIA" else "TEXT"
         result.media = mediaToPigeon(message)
-        result.hasMedia = message.hasMedia()
+        result.hasMedia = hasMedia
         result.attributes = attributesToPigeon(message.attributes)
         return result
     }
@@ -133,7 +136,9 @@ object Mapper {
         return result
     }
 
-    fun aggregatedDeliveryReceiptToPigeon(aggregatedDeliveryReceipt: AggregatedDeliveryReceipt?): Api.DeliveryReceiptData? {
+    fun aggregatedDeliveryReceiptToPigeon(
+        aggregatedDeliveryReceipt: AggregatedDeliveryReceipt?
+    ): Api.DeliveryReceiptData? {
         if (aggregatedDeliveryReceipt == null) {
             return null
         }
@@ -167,18 +172,21 @@ object Mapper {
     }
 
     fun mediaToPigeon(message: Message): Api.MessageMediaData? {
-        if (!message.hasMedia()) {
-            return null
-        }
+        // TODO: Support Multiple files
+        val hasMedia = message.attachedMedia.isNotEmpty()
+        if (!hasMedia) return null
 
         val result = Api.MessageMediaData()
-        result.sid = message.mediaSid
-        result.fileName = message.mediaFileName
-        result.type = message.mediaType
-        result.size = message.mediaSize
         result.conversationSid = message.conversationSid
         result.messageIndex = message.messageIndex
         result.messageSid = message.sid
+
+        val media = message.attachedMedia.first()
+        result.sid = media.sid
+        result.fileName = media.filename
+        result.type = media.contentType
+        result.size = media.size
+
         return result
     }
 

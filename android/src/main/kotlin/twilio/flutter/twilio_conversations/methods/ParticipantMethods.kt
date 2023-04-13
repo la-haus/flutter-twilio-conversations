@@ -1,9 +1,7 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
 import com.twilio.util.ErrorInfo
-import com.twilio.conversations.StatusListener
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
@@ -11,6 +9,8 @@ import twilio.flutter.twilio_conversations.exceptions.ClientNotInitializedExcept
 import twilio.flutter.twilio_conversations.exceptions.ConversionException
 import twilio.flutter.twilio_conversations.exceptions.NotFoundException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
+import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
+import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
 
 class ParticipantMethods : Api.ParticipantApi {
     private val TAG = "ParticipantMethods"
@@ -24,9 +24,9 @@ class ParticipantMethods : Api.ParticipantApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
-            override fun onSuccess(conversation: Conversation) {
-                val participant = conversation.getParticipantBySid(participantSid)
+        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+            override fun onSafeSuccess(item: Conversation) {
+                val participant = item.getParticipantBySid(participantSid)
                     ?: return result.error(NotFoundException("No participant found with SID: $participantSid"))
 
                 participant.getAndSubscribeUser {
@@ -54,12 +54,12 @@ class ParticipantMethods : Api.ParticipantApi {
         val participantAttributes = Mapper.pigeonToAttributes(attributes)
             ?: return result.error(ConversionException("Could not convert $attributes to valid Attributes"))
 
-        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
-            override fun onSuccess(conversation: Conversation) {
-                val participant = conversation.getParticipantBySid(participantSid)
+        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+            override fun onSafeSuccess(item: Conversation) {
+                val participant = item.getParticipantBySid(participantSid)
                     ?: return result.error(NotFoundException("No participant found with SID: $participantSid"))
-                participant.setAttributes(participantAttributes, object : StatusListener {
-                    override fun onSuccess() {
+                participant.setAttributes(participantAttributes, object : SafeStatusListener {
+                    override fun onSafeSuccess() {
                         debug("setAttributes => onSuccess")
                         result.success(null)
                     }
@@ -87,12 +87,12 @@ class ParticipantMethods : Api.ParticipantApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
-            override fun onSuccess(conversation: Conversation) {
-                val participant = conversation.getParticipantBySid(participantSid)
+        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+            override fun onSafeSuccess(item: Conversation) {
+                val participant = item.getParticipantBySid(participantSid)
                     ?: return result.error(NotFoundException("No participant found with SID: $participantSid"))
-                participant.remove(object : StatusListener {
-                    override fun onSuccess() {
+                participant.remove(object : SafeStatusListener {
+                    override fun onSafeSuccess() {
                         debug("remove => onSuccess")
                         result.success(null)
                     }

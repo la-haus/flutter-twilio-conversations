@@ -14,6 +14,8 @@ import twilio.flutter.twilio_conversations.exceptions.ClientNotInitializedExcept
 import twilio.flutter.twilio_conversations.exceptions.ConversionException
 import twilio.flutter.twilio_conversations.exceptions.NotFoundException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
+import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
+import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
 
 class MessageMethods : Api.MessageApi {
     private val TAG = "MessageMethods"
@@ -27,24 +29,24 @@ class MessageMethods : Api.MessageApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
-            override fun onSuccess(conversation: Conversation) {
-                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
-                    override fun onSuccess(message: Message) {
-                        debug("getMediaContentTemporaryUrl => onSuccess: ${message.attachedMedia}")
+        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+            override fun onSafeSuccess(item: Conversation) {
+                item.getMessageByIndex(messageIndex, object : SafeCallbackListener<Message> {
+                    override fun onSafeSuccess(item: Message) {
+                        debug("getMediaContentTemporaryUrl => onSuccess: ${item.attachedMedia}")
 
-                        if (message.attachedMedia.isEmpty()) {
+                        if (item.attachedMedia.isEmpty()) {
                             return result.error(NotFoundException("No media attached to message"))
                         }
 
                         // TODO: Add support for multiple media
-                        val media = message.attachedMedia.first()
+                        val media = item.attachedMedia.first()
 
                         media.getTemporaryContentUrl(
-                            object : CallbackListener<String> {
-                                override fun onSuccess(url: String?) {
-                                    debug("getMediaContentTemporaryUrl => onSuccess: $url")
-                                    result.success(url)
+                            object : SafeCallbackListener<String> {
+                                override fun onSafeSuccess(item: String) {
+                                    debug("getMediaContentTemporaryUrl => onSuccess: $item")
+                                    result.success(item)
                                 }
 
                                 override fun onError(errorInfo: ErrorInfo) {
@@ -78,11 +80,11 @@ class MessageMethods : Api.MessageApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
-            override fun onSuccess(conversation: Conversation) {
-                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
-                    override fun onSuccess(message: Message) {
-                        val participant = message.participant
+        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+            override fun onSafeSuccess(item: Conversation) {
+                item.getMessageByIndex(messageIndex, object : SafeCallbackListener<Message> {
+                    override fun onSafeSuccess(item: Message) {
+                        val participant = item.participant
                             ?: return result.error(NotFoundException("Participant not found for message: $messageIndex."))
                         debug("getParticipant => onSuccess")
                         return result.success(Mapper.participantToPigeon(participant))
@@ -114,12 +116,15 @@ class MessageMethods : Api.MessageApi {
         val messageAttributes = Mapper.pigeonToAttributes(attributes)
             ?: return result.error(ConversionException("Could not convert $attributes to valid Attributes"))
 
-        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
-            override fun onSuccess(conversation: Conversation) {
-                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
-                    override fun onSuccess(message: Message) {
-                        message.setAttributes(messageAttributes, object : StatusListener {
-                            override fun onSuccess() {
+        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+            override fun onSafeSuccess(item: Conversation) {
+                val conversation = item
+
+                conversation.getMessageByIndex(messageIndex, object :
+                    SafeCallbackListener<Message> {
+                    override fun onSafeSuccess(item: Message) {
+                        item.setAttributes(messageAttributes, object : SafeStatusListener {
+                            override fun onSafeSuccess() {
                                 debug("setAttributes => onSuccess")
                                 result.success(null)
                             }
@@ -155,12 +160,12 @@ class MessageMethods : Api.MessageApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
-            override fun onSuccess(conversation: Conversation) {
-                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
-                    override fun onSuccess(message: Message) {
+        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+            override fun onSafeSuccess(item: Conversation) {
+                item.getMessageByIndex(messageIndex, object : SafeCallbackListener<Message> {
+                    override fun onSafeSuccess(item: Message) {
                         // TODO: Handle error case
-                        GlobalScope.launch { message.updateMessageBody(messageBody) }
+                        GlobalScope.launch { item.updateMessageBody(messageBody) }
                         result.success(null)
                     }
 
@@ -191,12 +196,12 @@ class MessageMethods : Api.MessageApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
-            override fun onSuccess(conversation: Conversation) {
-                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
-                    override fun onSuccess(message: Message) {
+        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+            override fun onSafeSuccess(item: Conversation) {
+                item.getMessageByIndex(messageIndex, object : SafeCallbackListener<Message> {
+                    override fun onSafeSuccess(item: Message) {
                         val aggregatedDeliveryReceipt =
-                            message.aggregatedDeliveryReceipt ?: return result.error(
+                            item.aggregatedDeliveryReceipt ?: return result.error(
                                 NotFoundException("AggregatedDeliveryReceipt not found for message: $messageIndex.")
                             )
                         debug("getAggregatedDeliveryReceipt => onSuccess")

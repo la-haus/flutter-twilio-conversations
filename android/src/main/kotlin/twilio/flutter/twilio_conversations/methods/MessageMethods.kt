@@ -2,8 +2,6 @@ package twilio.flutter.twilio_conversations.methods
 
 import com.twilio.conversations.*
 import com.twilio.util.ErrorInfo
-import com.twilio.conversations.extensions.getTemporaryContentUrl
-import com.twilio.conversations.extensions.getTemporaryContentUrlsForMedia
 import com.twilio.conversations.extensions.updateMessageBody
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -15,7 +13,7 @@ import twilio.flutter.twilio_conversations.exceptions.ConversionException
 import twilio.flutter.twilio_conversations.exceptions.NotFoundException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
 import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
-import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
+import twilio.flutter.twilio_conversations.listeners.SafeNullableCallbackListener
 
 class MessageMethods : Api.MessageApi {
     private val TAG = "MessageMethods"

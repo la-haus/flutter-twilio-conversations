@@ -14,6 +14,7 @@ import twilio.flutter.twilio_conversations.exceptions.ClientNotInitializedExcept
 import twilio.flutter.twilio_conversations.exceptions.MissingParameterException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
 import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
+import twilio.flutter.twilio_conversations.listeners.SafeNullableCallbackListener
 import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
 
 class ConversationClientMethods : Api.ConversationClientApi {
@@ -47,7 +48,7 @@ class ConversationClientMethods : Api.ConversationClientApi {
         debug("createConversation")
         try {
             TwilioConversationsPlugin.client?.createConversation(friendlyName, object :
-                SafeCallbackListener<Conversation?> {
+                SafeNullableCallbackListener<Conversation> {
                 override fun onSafeSuccess(item: Conversation?) {
                     if (item == null) {
                         debug("createConversation => onError: Conversation null")
@@ -105,7 +106,7 @@ class ConversationClientMethods : Api.ConversationClientApi {
         debug("getConversations => conversationSidOrUniqueName: $conversationSidOrUniqueName")
         client.getConversation(
             conversationSidOrUniqueName,
-            object : SafeCallbackListener<Conversation?> {
+            object : SafeNullableCallbackListener<Conversation> {
                 override fun onSafeSuccess(item: Conversation?) {
                     debug("getConversations => onSuccess")
                     result.success(Mapper.conversationToPigeon(item))

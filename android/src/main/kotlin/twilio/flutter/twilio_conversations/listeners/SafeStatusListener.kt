@@ -10,6 +10,10 @@ interface SafeStatusListener : StatusListener {
         } catch (e: Exception) {
             val errorInfo = ErrorInfo(-1, e.message ?: "Unknown error")
             onError(errorInfo)
+        } catch (e: Throwable) {
+            onError(ErrorInfo(-1, e.message ?: "Unknown error"))
+        } catch (e: NullPointerException) {
+            onError(ErrorInfo(-1, e.message ?: "Unknown error"))
         }
     }
 

@@ -9,8 +9,6 @@ import twilio.flutter.twilio_conversations.exceptions.ClientNotInitializedExcept
 import twilio.flutter.twilio_conversations.exceptions.ConversionException
 import twilio.flutter.twilio_conversations.exceptions.NotFoundException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
-import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
-import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
 
 class ParticipantMethods : Api.ParticipantApi {
     private val TAG = "ParticipantMethods"

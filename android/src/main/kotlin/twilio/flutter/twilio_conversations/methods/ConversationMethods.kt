@@ -1,10 +1,7 @@
 import com.twilio.conversations.Attributes
-import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
 import com.twilio.util.ErrorInfo
 import com.twilio.conversations.Message
-import com.twilio.conversations.StatusListener
-import com.twilio.conversations.extensions.addListener
 import com.twilio.conversations.extensions.sendMessage
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -14,10 +11,10 @@ import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 import twilio.flutter.twilio_conversations.exceptions.ClientNotInitializedException
 import twilio.flutter.twilio_conversations.exceptions.ConversionException
-import twilio.flutter.twilio_conversations.exceptions.MissingParameterException
 import twilio.flutter.twilio_conversations.exceptions.NotFoundException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
 import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
+import twilio.flutter.twilio_conversations.listeners.SafeNullableCallbackListener
 import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
 
 class ConversationMethods : Api.ConversationApi {
@@ -449,8 +446,8 @@ class ConversationMethods : Api.ConversationApi {
         try {
             client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
                 override fun onSafeSuccess(item: Conversation) {
-                    item.getUnreadMessagesCount(object : SafeCallbackListener<Long> {
-                        override fun onSafeSuccess(item: Long) {
+                    item.getUnreadMessagesCount(object : SafeNullableCallbackListener<Long> {
+                        override fun onSafeSuccess(item: Long?) {
                             debug("getUnreadMessagesCount => onSuccess: $item")
                             result.success(item ?: 0)
                         }

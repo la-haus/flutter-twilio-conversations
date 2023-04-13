@@ -7,6 +7,7 @@ import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
 import twilio.flutter.twilio_conversations.listeners.ClientListener
+import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
 
 class PluginMethods : Api.PluginApi {
     private val TAG = "PluginMethods"

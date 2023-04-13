@@ -8,6 +8,8 @@ import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 import twilio.flutter.twilio_conversations.exceptions.ClientNotInitializedException
 import twilio.flutter.twilio_conversations.exceptions.ConversionException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
+import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
+import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
 
 class UserMethods : Api.UserApi {
     private val TAG = "UserMethods"

@@ -1,4 +1,5 @@
 import 'package:pigeon/pigeon.dart';
+import 'package:twilio_conversations/api.dart';
 
 class ConversationClientData {
   String? myIdentity;
@@ -89,6 +90,17 @@ class DeliveryReceiptData {
   String? delivered;
   String? failed;
   String? sent;
+}
+
+class DetailedDeliveryReceiptData {
+  String? conversationSid;
+  String? channelMessageSid;
+  String? dateCreatedAsDate;
+  String? dateUpdatedAsDate;
+  int? errorCode;
+  String? messageSid;
+  String? participantSid;
+  String? sid;
 }
 
 class UserData {
@@ -270,6 +282,10 @@ abstract class MessageApi {
 
   @async
   DeliveryReceiptData getAggregatedDeliveryReceipt(
+      String conversationSid, int messageIndex);
+
+  @async
+  DetailedDeliveryReceiptData getDetailedDeliveryReceiptList(
       String conversationSid, int messageIndex);
 }
 

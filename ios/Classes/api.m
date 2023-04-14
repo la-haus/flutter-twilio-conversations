@@ -67,6 +67,10 @@ static id GetNullableObject(NSDictionary* dict, id key) {
 + (TWCONDeliveryReceiptData *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
 @end
+@interface TWCONDetailedDeliveryReceiptData ()
++ (TWCONDetailedDeliveryReceiptData *)fromMap:(NSDictionary *)dict;
+- (NSDictionary *)toMap;
+@end
 @interface TWCONUserData ()
 + (TWCONUserData *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
@@ -394,6 +398,43 @@ static id GetNullableObject(NSDictionary* dict, id key) {
 }
 - (NSDictionary *)toMap {
   return [NSDictionary dictionaryWithObjectsAndKeys:(self.total ? self.total : [NSNull null]), @"total", (self.read ? self.read : [NSNull null]), @"read", (self.undelivered ? self.undelivered : [NSNull null]), @"undelivered", (self.delivered ? self.delivered : [NSNull null]), @"delivered", (self.failed ? self.failed : [NSNull null]), @"failed", (self.sent ? self.sent : [NSNull null]), @"sent", nil];
+}
+@end
+
+@implementation TWCONDetailedDeliveryReceiptData
++ (instancetype)makeWithConversationSid:(nullable NSString *)conversationSid
+    channelMessageSid:(nullable NSString *)channelMessageSid
+    dateCreatedAsDate:(nullable NSString *)dateCreatedAsDate
+    dateUpdatedAsDate:(nullable NSString *)dateUpdatedAsDate
+    errorCode:(nullable NSNumber *)errorCode
+    messageSid:(nullable NSString *)messageSid
+    participantSid:(nullable NSString *)participantSid
+    sid:(nullable NSString *)sid {
+  TWCONDetailedDeliveryReceiptData* pigeonResult = [[TWCONDetailedDeliveryReceiptData alloc] init];
+  pigeonResult.conversationSid = conversationSid;
+  pigeonResult.channelMessageSid = channelMessageSid;
+  pigeonResult.dateCreatedAsDate = dateCreatedAsDate;
+  pigeonResult.dateUpdatedAsDate = dateUpdatedAsDate;
+  pigeonResult.errorCode = errorCode;
+  pigeonResult.messageSid = messageSid;
+  pigeonResult.participantSid = participantSid;
+  pigeonResult.sid = sid;
+  return pigeonResult;
+}
++ (TWCONDetailedDeliveryReceiptData *)fromMap:(NSDictionary *)dict {
+  TWCONDetailedDeliveryReceiptData *pigeonResult = [[TWCONDetailedDeliveryReceiptData alloc] init];
+  pigeonResult.conversationSid = GetNullableObject(dict, @"conversationSid");
+  pigeonResult.channelMessageSid = GetNullableObject(dict, @"channelMessageSid");
+  pigeonResult.dateCreatedAsDate = GetNullableObject(dict, @"dateCreatedAsDate");
+  pigeonResult.dateUpdatedAsDate = GetNullableObject(dict, @"dateUpdatedAsDate");
+  pigeonResult.errorCode = GetNullableObject(dict, @"errorCode");
+  pigeonResult.messageSid = GetNullableObject(dict, @"messageSid");
+  pigeonResult.participantSid = GetNullableObject(dict, @"participantSid");
+  pigeonResult.sid = GetNullableObject(dict, @"sid");
+  return pigeonResult;
+}
+- (NSDictionary *)toMap {
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.conversationSid ? self.conversationSid : [NSNull null]), @"conversationSid", (self.channelMessageSid ? self.channelMessageSid : [NSNull null]), @"channelMessageSid", (self.dateCreatedAsDate ? self.dateCreatedAsDate : [NSNull null]), @"dateCreatedAsDate", (self.dateUpdatedAsDate ? self.dateUpdatedAsDate : [NSNull null]), @"dateUpdatedAsDate", (self.errorCode ? self.errorCode : [NSNull null]), @"errorCode", (self.messageSid ? self.messageSid : [NSNull null]), @"messageSid", (self.participantSid ? self.participantSid : [NSNull null]), @"participantSid", (self.sid ? self.sid : [NSNull null]), @"sid", nil];
 }
 @end
 
@@ -1607,6 +1648,9 @@ void TWCONParticipantApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObje
       return [TWCONDeliveryReceiptData fromMap:[self readValue]];
     
     case 130:     
+      return [TWCONDetailedDeliveryReceiptData fromMap:[self readValue]];
+    
+    case 131:     
       return [TWCONParticipantData fromMap:[self readValue]];
     
     default:    
@@ -1629,8 +1673,12 @@ void TWCONParticipantApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObje
     [self writeByte:129];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+  if ([value isKindOfClass:[TWCONDetailedDeliveryReceiptData class]]) {
     [self writeByte:130];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+    [self writeByte:131];
     [self writeValue:[value toMap]];
   } else 
 {
@@ -1761,6 +1809,27 @@ void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<T
         NSString *arg_conversationSid = args[0];
         NSNumber *arg_messageIndex = args[1];
         [api getAggregatedDeliveryReceiptConversationSid:arg_conversationSid messageIndex:arg_messageIndex completion:^(TWCONDeliveryReceiptData *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.MessageApi.getDetailedDeliveryReceiptList"
+        binaryMessenger:binaryMessenger
+        codec:TWCONMessageApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(getDetailedDeliveryReceiptListConversationSid:messageIndex:completion:)], @"TWCONMessageApi api (%@) doesn't respond to @selector(getDetailedDeliveryReceiptListConversationSid:messageIndex:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSNumber *arg_messageIndex = args[1];
+        [api getDetailedDeliveryReceiptListConversationSid:arg_conversationSid messageIndex:arg_messageIndex completion:^(NSArray<TWCONDetailedDeliveryReceiptData *> *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];

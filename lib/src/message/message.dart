@@ -160,7 +160,7 @@ class Message {
           .getDetailedDeliveryReceiptList(conversationSid, messageIndex!);
 
       return result.map((element) {
-        return DetailedDeliveryReceipt.fromPigeon(element);
+        return DetailedDeliveryReceipt.fromPigeon(element!);
       }).toList();
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);

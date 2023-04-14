@@ -1,8 +1,6 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.twilio.conversations.CallbackListener
 import com.twilio.util.ErrorInfo
-import com.twilio.conversations.StatusListener
 import com.twilio.conversations.User
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
@@ -10,6 +8,8 @@ import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 import twilio.flutter.twilio_conversations.exceptions.ClientNotInitializedException
 import twilio.flutter.twilio_conversations.exceptions.ConversionException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
+import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
+import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
 
 class UserMethods : Api.UserApi {
     private val TAG = "UserMethods"
@@ -23,10 +23,10 @@ class UserMethods : Api.UserApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getAndSubscribeUser(identity, object : CallbackListener<User> {
-            override fun onSuccess(user: User) {
-                user.setFriendlyName(friendlyName, object : StatusListener {
-                    override fun onSuccess() {
+        client.getAndSubscribeUser(identity, object : SafeCallbackListener<User> {
+            override fun onSafeSuccess(item: User) {
+                item.setFriendlyName(friendlyName, object : SafeStatusListener {
+                    override fun onSafeSuccess() {
                         debug("setFriendlyName => onSuccess")
                         result.success(null)
                     }
@@ -56,10 +56,10 @@ class UserMethods : Api.UserApi {
         val userAttributes = Mapper.pigeonToAttributes(attributes)
             ?: return result.error(ConversionException("Could not convert $attributes to valid Attributes"))
 
-        client.getAndSubscribeUser(identity, object : CallbackListener<User> {
-            override fun onSuccess(user: User) {
-                user.setAttributes(userAttributes, object : StatusListener {
-                    override fun onSuccess() {
+        client.getAndSubscribeUser(identity, object : SafeCallbackListener<User> {
+            override fun onSafeSuccess(item: User) {
+                item.setAttributes(userAttributes, object : SafeStatusListener {
+                    override fun onSafeSuccess() {
                         debug("setAttributes => onSuccess")
                         result.success(null)
                     }

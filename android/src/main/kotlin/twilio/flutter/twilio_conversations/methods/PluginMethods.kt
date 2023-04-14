@@ -1,6 +1,5 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.ConversationsClient
 import com.twilio.util.ErrorInfo
 import twilio.flutter.twilio_conversations.Api
@@ -8,6 +7,7 @@ import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
 import twilio.flutter.twilio_conversations.listeners.ClientListener
+import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
 
 class PluginMethods : Api.PluginApi {
     private val TAG = "PluginMethods"
@@ -30,13 +30,13 @@ class PluginMethods : Api.PluginApi {
             .createProperties()
 
         ConversationsClient.create(TwilioConversationsPlugin.applicationContext, jwtToken, props, object :
-            CallbackListener<ConversationsClient> {
-            override fun onSuccess(conversationsClient: ConversationsClient) {
-                debug("create => onSuccess - myIdentity: '${conversationsClient.myUser?.identity ?: "unknown"}'")
-                TwilioConversationsPlugin.client = conversationsClient
+            SafeCallbackListener<ConversationsClient> {
+            override fun onSafeSuccess(item: ConversationsClient) {
+                debug("create => onSuccess - myIdentity: '${item.myUser?.identity ?: "unknown"}'")
+                TwilioConversationsPlugin.client = item
                 TwilioConversationsPlugin.clientListener = ClientListener()
-                conversationsClient.addListener(TwilioConversationsPlugin.clientListener!!)
-                val clientMap = Mapper.conversationsClientToPigeon(conversationsClient)
+                item.addListener(TwilioConversationsPlugin.clientListener!!)
+                val clientMap = Mapper.conversationsClientToPigeon(item)
                 result.success(clientMap)
             }
 

@@ -8,6 +8,7 @@ class DeliveryReceipt {
     this.delivered,
     this.failed,
     this.sent,
+    this.code,
   );
 
   final int total;
@@ -16,6 +17,7 @@ class DeliveryReceipt {
   final String delivered;
   final String failed;
   final String sent;
+  final int code;
 
   factory DeliveryReceipt.fromPigeon(DeliveryReceiptData deliveryReceiptData) {
     return DeliveryReceipt.fromMap(
@@ -30,12 +32,13 @@ class DeliveryReceipt {
       map['delivered'],
       map['failed'],
       map['sent'],
+      map['code'],
     );
     return deliveryReceipt;
   }
 
   @override
   String toString() {
-    return 'DeliveryReceipt{total: $total, read: $read, undelivered: $undelivered, delivered: $delivered, failed: $failed, sent: $sent}';
+    return 'DeliveryReceipt{total: $total, read: $read, undelivered: $undelivered, delivered: $delivered, failed: $failed, sent: $sent, code: $code}';
   }
 }

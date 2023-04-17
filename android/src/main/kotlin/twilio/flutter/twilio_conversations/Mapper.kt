@@ -152,6 +152,24 @@ object Mapper {
         return result
     }
 
+    fun detailedDeliveryReceiptToPigeon(
+        detailedDeliveryReceipt: DetailedDeliveryReceipt?
+    ): Api.DetailedDeliveryReceiptData? {
+        if (detailedDeliveryReceipt == null) {
+            return null
+        }
+        val result = Api.DetailedDeliveryReceiptData()
+        result.sid = detailedDeliveryReceipt.sid
+        result.conversationSid = detailedDeliveryReceipt.conversationSid
+        result.channelMessageSid = detailedDeliveryReceipt.channelMessageSid
+        result.messageSid = detailedDeliveryReceipt.messageSid
+        result.participantSid  = detailedDeliveryReceipt.participantSid
+        result.dateCreatedAsDate = detailedDeliveryReceipt.dateCreatedAsDate.toString()
+        result.dateUpdatedAsDate = detailedDeliveryReceipt.dateUpdatedAsDate.toString()
+        result.errorCode = detailedDeliveryReceipt.errorCode.toLong()
+        return result
+    }
+
     fun userToPigeon(user: User?): Api.UserData? {
         if (user == null) return null
         val result = Api.UserData()

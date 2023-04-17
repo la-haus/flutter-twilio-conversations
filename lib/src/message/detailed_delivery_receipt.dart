@@ -30,7 +30,6 @@ class DetailedDeliveryReceipt {
 
   factory DetailedDeliveryReceipt.fromMap(Map<String, dynamic> map) {
     final detailedDeliveryReceipt = DetailedDeliveryReceipt(
-      map['sid'],
       map['conversationSid'],
       map['channelMessageSid'],
       map['dateUpdatedAsDate'],
@@ -38,6 +37,7 @@ class DetailedDeliveryReceipt {
       map['errorCode'],
       map['messageSid'],
       map['participantSid'],
+      map['sid'],
     );
     return detailedDeliveryReceipt;
   }

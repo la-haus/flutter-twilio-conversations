@@ -229,7 +229,7 @@ class MessageMethods : Api.MessageApi {
     override fun getDetailedDeliveryReceiptList(
         conversationSid: String,
         messageIndex: Long,
-        result: Api.Result<List<Api.DetailedDeliveryReceiptData?>>
+        result: Api.Result<List<Api.DetailedDeliveryReceiptData>>
     ) {
         debug("getDetailedDeliveryReceiptList => conversationSid: $conversationSid messageIndex: $messageIndex")
         var client = TwilioConversationsPlugin.client ?: return result.error(
@@ -249,7 +249,7 @@ class MessageMethods : Api.MessageApi {
                                     Mapper.detailedDeliveryReceiptToPigeon(it)
                                 }
 
-                                return result.success(elements)
+                                return result.success(elements as List<Api.DetailedDeliveryReceiptData>?)
                             }
 
                             override fun onError(errorInfo: ErrorInfo) {

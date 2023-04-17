@@ -89,17 +89,7 @@ class DeliveryReceiptData {
   String? delivered;
   String? failed;
   String? sent;
-}
-
-class DetailedDeliveryReceiptData {
-  String? conversationSid;
-  String? channelMessageSid;
-  String? dateCreatedAsDate;
-  String? dateUpdatedAsDate;
-  int? errorCode;
-  String? messageSid;
-  String? participantSid;
-  String? sid;
+  int? code;
 }
 
 class UserData {
@@ -281,10 +271,6 @@ abstract class MessageApi {
 
   @async
   DeliveryReceiptData getAggregatedDeliveryReceipt(
-      String conversationSid, int messageIndex);
-
-  @async
-  List<DetailedDeliveryReceiptData> getDetailedDeliveryReceiptList(
       String conversationSid, int messageIndex);
 }
 

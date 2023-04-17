@@ -1047,6 +1047,12 @@ public class Api {
       this.sent = setterArg;
     }
 
+    private @Nullable Long code;
+    public @Nullable Long getCode() { return code; }
+    public void setCode(@Nullable Long setterArg) {
+      this.code = setterArg;
+    }
+
     public static class Builder {
       private @Nullable Long total;
       public @NonNull Builder setTotal(@Nullable Long setterArg) {
@@ -1078,6 +1084,11 @@ public class Api {
         this.sent = setterArg;
         return this;
       }
+      private @Nullable Long code;
+      public @NonNull Builder setCode(@Nullable Long setterArg) {
+        this.code = setterArg;
+        return this;
+      }
       public @NonNull DeliveryReceiptData build() {
         DeliveryReceiptData pigeonReturn = new DeliveryReceiptData();
         pigeonReturn.setTotal(total);
@@ -1086,6 +1097,7 @@ public class Api {
         pigeonReturn.setDelivered(delivered);
         pigeonReturn.setFailed(failed);
         pigeonReturn.setSent(sent);
+        pigeonReturn.setCode(code);
         return pigeonReturn;
       }
     }
@@ -1097,6 +1109,7 @@ public class Api {
       toMapResult.put("delivered", delivered);
       toMapResult.put("failed", failed);
       toMapResult.put("sent", sent);
+      toMapResult.put("code", code);
       return toMapResult;
     }
     static @NonNull DeliveryReceiptData fromMap(@NonNull Map<String, Object> map) {
@@ -1113,144 +1126,8 @@ public class Api {
       pigeonResult.setFailed((String)failed);
       Object sent = map.get("sent");
       pigeonResult.setSent((String)sent);
-      return pigeonResult;
-    }
-  }
-
-  /** Generated class from Pigeon that represents data sent in messages. */
-  public static class DetailedDeliveryReceiptData {
-    private @Nullable String conversationSid;
-    public @Nullable String getConversationSid() { return conversationSid; }
-    public void setConversationSid(@Nullable String setterArg) {
-      this.conversationSid = setterArg;
-    }
-
-    private @Nullable String channelMessageSid;
-    public @Nullable String getChannelMessageSid() { return channelMessageSid; }
-    public void setChannelMessageSid(@Nullable String setterArg) {
-      this.channelMessageSid = setterArg;
-    }
-
-    private @Nullable String dateCreatedAsDate;
-    public @Nullable String getDateCreatedAsDate() { return dateCreatedAsDate; }
-    public void setDateCreatedAsDate(@Nullable String setterArg) {
-      this.dateCreatedAsDate = setterArg;
-    }
-
-    private @Nullable String dateUpdatedAsDate;
-    public @Nullable String getDateUpdatedAsDate() { return dateUpdatedAsDate; }
-    public void setDateUpdatedAsDate(@Nullable String setterArg) {
-      this.dateUpdatedAsDate = setterArg;
-    }
-
-    private @Nullable Long errorCode;
-    public @Nullable Long getErrorCode() { return errorCode; }
-    public void setErrorCode(@Nullable Long setterArg) {
-      this.errorCode = setterArg;
-    }
-
-    private @Nullable String messageSid;
-    public @Nullable String getMessageSid() { return messageSid; }
-    public void setMessageSid(@Nullable String setterArg) {
-      this.messageSid = setterArg;
-    }
-
-    private @Nullable String participantSid;
-    public @Nullable String getParticipantSid() { return participantSid; }
-    public void setParticipantSid(@Nullable String setterArg) {
-      this.participantSid = setterArg;
-    }
-
-    private @Nullable String sid;
-    public @Nullable String getSid() { return sid; }
-    public void setSid(@Nullable String setterArg) {
-      this.sid = setterArg;
-    }
-
-    public static class Builder {
-      private @Nullable String conversationSid;
-      public @NonNull Builder setConversationSid(@Nullable String setterArg) {
-        this.conversationSid = setterArg;
-        return this;
-      }
-      private @Nullable String channelMessageSid;
-      public @NonNull Builder setChannelMessageSid(@Nullable String setterArg) {
-        this.channelMessageSid = setterArg;
-        return this;
-      }
-      private @Nullable String dateCreatedAsDate;
-      public @NonNull Builder setDateCreatedAsDate(@Nullable String setterArg) {
-        this.dateCreatedAsDate = setterArg;
-        return this;
-      }
-      private @Nullable String dateUpdatedAsDate;
-      public @NonNull Builder setDateUpdatedAsDate(@Nullable String setterArg) {
-        this.dateUpdatedAsDate = setterArg;
-        return this;
-      }
-      private @Nullable Long errorCode;
-      public @NonNull Builder setErrorCode(@Nullable Long setterArg) {
-        this.errorCode = setterArg;
-        return this;
-      }
-      private @Nullable String messageSid;
-      public @NonNull Builder setMessageSid(@Nullable String setterArg) {
-        this.messageSid = setterArg;
-        return this;
-      }
-      private @Nullable String participantSid;
-      public @NonNull Builder setParticipantSid(@Nullable String setterArg) {
-        this.participantSid = setterArg;
-        return this;
-      }
-      private @Nullable String sid;
-      public @NonNull Builder setSid(@Nullable String setterArg) {
-        this.sid = setterArg;
-        return this;
-      }
-      public @NonNull DetailedDeliveryReceiptData build() {
-        DetailedDeliveryReceiptData pigeonReturn = new DetailedDeliveryReceiptData();
-        pigeonReturn.setConversationSid(conversationSid);
-        pigeonReturn.setChannelMessageSid(channelMessageSid);
-        pigeonReturn.setDateCreatedAsDate(dateCreatedAsDate);
-        pigeonReturn.setDateUpdatedAsDate(dateUpdatedAsDate);
-        pigeonReturn.setErrorCode(errorCode);
-        pigeonReturn.setMessageSid(messageSid);
-        pigeonReturn.setParticipantSid(participantSid);
-        pigeonReturn.setSid(sid);
-        return pigeonReturn;
-      }
-    }
-    @NonNull Map<String, Object> toMap() {
-      Map<String, Object> toMapResult = new HashMap<>();
-      toMapResult.put("conversationSid", conversationSid);
-      toMapResult.put("channelMessageSid", channelMessageSid);
-      toMapResult.put("dateCreatedAsDate", dateCreatedAsDate);
-      toMapResult.put("dateUpdatedAsDate", dateUpdatedAsDate);
-      toMapResult.put("errorCode", errorCode);
-      toMapResult.put("messageSid", messageSid);
-      toMapResult.put("participantSid", participantSid);
-      toMapResult.put("sid", sid);
-      return toMapResult;
-    }
-    static @NonNull DetailedDeliveryReceiptData fromMap(@NonNull Map<String, Object> map) {
-      DetailedDeliveryReceiptData pigeonResult = new DetailedDeliveryReceiptData();
-      Object conversationSid = map.get("conversationSid");
-      pigeonResult.setConversationSid((String)conversationSid);
-      Object channelMessageSid = map.get("channelMessageSid");
-      pigeonResult.setChannelMessageSid((String)channelMessageSid);
-      Object dateCreatedAsDate = map.get("dateCreatedAsDate");
-      pigeonResult.setDateCreatedAsDate((String)dateCreatedAsDate);
-      Object dateUpdatedAsDate = map.get("dateUpdatedAsDate");
-      pigeonResult.setDateUpdatedAsDate((String)dateUpdatedAsDate);
-      Object errorCode = map.get("errorCode");
-      pigeonResult.setErrorCode((errorCode == null) ? null : ((errorCode instanceof Integer) ? (Integer)errorCode : (Long)errorCode));
-      Object messageSid = map.get("messageSid");
-      pigeonResult.setMessageSid((String)messageSid);
-      Object participantSid = map.get("participantSid");
-      pigeonResult.setParticipantSid((String)participantSid);
-      Object sid = map.get("sid");
-      pigeonResult.setSid((String)sid);
+      Object code = map.get("code");
+      pigeonResult.setCode((code == null) ? null : ((code instanceof Integer) ? (Integer)code : (Long)code));
       return pigeonResult;
     }
   }
@@ -3211,9 +3088,6 @@ public class Api {
           return DeliveryReceiptData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)130:         
-          return DetailedDeliveryReceiptData.fromMap((Map<String, Object>) readValue(buffer));
-        
-        case (byte)131:         
           return ParticipantData.fromMap((Map<String, Object>) readValue(buffer));
         
         default:        
@@ -3231,12 +3105,8 @@ public class Api {
         stream.write(129);
         writeValue(stream, ((DeliveryReceiptData) value).toMap());
       } else 
-      if (value instanceof DetailedDeliveryReceiptData) {
-        stream.write(130);
-        writeValue(stream, ((DetailedDeliveryReceiptData) value).toMap());
-      } else 
       if (value instanceof ParticipantData) {
-        stream.write(131);
+        stream.write(130);
         writeValue(stream, ((ParticipantData) value).toMap());
       } else 
 {
@@ -3252,7 +3122,6 @@ public class Api {
     void setAttributes(String conversationSid, Long messageIndex, AttributesData attributes, Result<Void> result);
     void updateMessageBody(String conversationSid, Long messageIndex, String messageBody, Result<Void> result);
     void getAggregatedDeliveryReceipt(String conversationSid, Long messageIndex, Result<DeliveryReceiptData> result);
-    void getDetailedDeliveryReceiptList(String conversationSid, Long messageIndex, Result<List<DetailedDeliveryReceiptData>> result);
 
     /** The codec used by MessageApi. */
     static MessageCodec<Object> getCodec() {
@@ -3449,44 +3318,6 @@ public class Api {
               };
 
               api.getAggregatedDeliveryReceipt(conversationSidArg, messageIndexArg.longValue(), resultCallback);
-            }
-            catch (Error | RuntimeException exception) {
-              wrapped.put("error", wrapError(exception));
-              reply.reply(wrapped);
-            }
-          });
-        } else {
-          channel.setMessageHandler(null);
-        }
-      }
-      {
-        BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MessageApi.getDetailedDeliveryReceiptList", getCodec());
-        if (api != null) {
-          channel.setMessageHandler((message, reply) -> {
-            Map<String, Object> wrapped = new HashMap<>();
-            try {
-              ArrayList<Object> args = (ArrayList<Object>)message;
-              String conversationSidArg = (String)args.get(0);
-              if (conversationSidArg == null) {
-                throw new NullPointerException("conversationSidArg unexpectedly null.");
-              }
-              Number messageIndexArg = (Number)args.get(1);
-              if (messageIndexArg == null) {
-                throw new NullPointerException("messageIndexArg unexpectedly null.");
-              }
-              Result<List<DetailedDeliveryReceiptData>> resultCallback = new Result<List<DetailedDeliveryReceiptData>>() {
-                public void success(List<DetailedDeliveryReceiptData> result) {
-                  wrapped.put("result", result);
-                  reply.reply(wrapped);
-                }
-                public void error(Throwable error) {
-                  wrapped.put("error", wrapError(error));
-                  reply.reply(wrapped);
-                }
-              };
-
-              api.getDetailedDeliveryReceiptList(conversationSidArg, messageIndexArg.longValue(), resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

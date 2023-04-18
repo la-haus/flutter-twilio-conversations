@@ -151,7 +151,6 @@ class Message {
     }
   }
 
-//TODO: implement getDetailedDeliveryReceiptList
   Future<List<DetailedDeliveryReceipt?>>
       getDetailedDeliveryReceiptList() async {
     try {

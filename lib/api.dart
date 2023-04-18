@@ -432,6 +432,55 @@ class DeliveryReceiptData {
   }
 }
 
+class DetailedDeliveryReceiptData {
+  DetailedDeliveryReceiptData({
+    this.conversationSid,
+    this.channelMessageSid,
+    this.dateCreatedAsDate,
+    this.dateUpdatedAsDate,
+    this.errorCode,
+    this.messageSid,
+    this.participantSid,
+    this.sid,
+  });
+
+  String? conversationSid;
+  String? channelMessageSid;
+  String? dateCreatedAsDate;
+  String? dateUpdatedAsDate;
+  int? errorCode;
+  String? messageSid;
+  String? participantSid;
+  String? sid;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['conversationSid'] = conversationSid;
+    pigeonMap['channelMessageSid'] = channelMessageSid;
+    pigeonMap['dateCreatedAsDate'] = dateCreatedAsDate;
+    pigeonMap['dateUpdatedAsDate'] = dateUpdatedAsDate;
+    pigeonMap['errorCode'] = errorCode;
+    pigeonMap['messageSid'] = messageSid;
+    pigeonMap['participantSid'] = participantSid;
+    pigeonMap['sid'] = sid;
+    return pigeonMap;
+  }
+
+  static DetailedDeliveryReceiptData decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return DetailedDeliveryReceiptData(
+      conversationSid: pigeonMap['conversationSid'] as String?,
+      channelMessageSid: pigeonMap['channelMessageSid'] as String?,
+      dateCreatedAsDate: pigeonMap['dateCreatedAsDate'] as String?,
+      dateUpdatedAsDate: pigeonMap['dateUpdatedAsDate'] as String?,
+      errorCode: pigeonMap['errorCode'] as int?,
+      messageSid: pigeonMap['messageSid'] as String?,
+      participantSid: pigeonMap['participantSid'] as String?,
+      sid: pigeonMap['sid'] as String?,
+    );
+  }
+}
+
 class UserData {
   UserData({
     this.identity,
@@ -1783,8 +1832,12 @@ class _MessageApiCodec extends StandardMessageCodec {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
-    if (value is ParticipantData) {
+    if (value is DetailedDeliveryReceiptData) {
       buffer.putUint8(130);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is ParticipantData) {
+      buffer.putUint8(131);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -1801,6 +1854,9 @@ class _MessageApiCodec extends StandardMessageCodec {
         return DeliveryReceiptData.decode(readValue(buffer)!);
       
       case 130:       
+        return DetailedDeliveryReceiptData.decode(readValue(buffer)!);
+      
+      case 131:       
         return ParticipantData.decode(readValue(buffer)!);
       
       default:      
@@ -1942,6 +1998,33 @@ class MessageApi {
       );
     } else {
       return (replyMap['result'] as DeliveryReceiptData?)!;
+    }
+  }
+
+  Future<List<DetailedDeliveryReceiptData?>> getDetailedDeliveryReceiptList(String arg_conversationSid, int arg_messageIndex) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.MessageApi.getDetailedDeliveryReceiptList', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_conversationSid, arg_messageIndex]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else if (replyMap['result'] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyMap['result'] as List<Object?>?)!.cast<DetailedDeliveryReceiptData?>();
     }
   }
 }

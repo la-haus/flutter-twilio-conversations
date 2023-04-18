@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class TWCONMessageOptionsData;
 @class TWCONParticipantData;
 @class TWCONDeliveryReceiptData;
+@class TWCONDetailedDeliveryReceiptData;
 @class TWCONUserData;
 @class TWCONMessageCount;
 @class TWCONConversationUpdatedData;
@@ -173,6 +174,25 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable) NSString * delivered;
 @property(nonatomic, copy, nullable) NSString * failed;
 @property(nonatomic, copy, nullable) NSString * sent;
+@end
+
+@interface TWCONDetailedDeliveryReceiptData : NSObject
++ (instancetype)makeWithConversationSid:(nullable NSString *)conversationSid
+    channelMessageSid:(nullable NSString *)channelMessageSid
+    dateCreatedAsDate:(nullable NSString *)dateCreatedAsDate
+    dateUpdatedAsDate:(nullable NSString *)dateUpdatedAsDate
+    errorCode:(nullable NSNumber *)errorCode
+    messageSid:(nullable NSString *)messageSid
+    participantSid:(nullable NSString *)participantSid
+    sid:(nullable NSString *)sid;
+@property(nonatomic, copy, nullable) NSString * conversationSid;
+@property(nonatomic, copy, nullable) NSString * channelMessageSid;
+@property(nonatomic, copy, nullable) NSString * dateCreatedAsDate;
+@property(nonatomic, copy, nullable) NSString * dateUpdatedAsDate;
+@property(nonatomic, strong, nullable) NSNumber * errorCode;
+@property(nonatomic, copy, nullable) NSString * messageSid;
+@property(nonatomic, copy, nullable) NSString * participantSid;
+@property(nonatomic, copy, nullable) NSString * sid;
 @end
 
 @interface TWCONUserData : NSObject
@@ -337,6 +357,8 @@ NSObject<FlutterMessageCodec> *TWCONMessageApiGetCodec(void);
 - (void)updateMessageBodyConversationSid:(nullable NSString *)conversationSid messageIndex:(nullable NSNumber *)messageIndex messageBody:(nullable NSString *)messageBody completion:(void(^)(FlutterError *_Nullable))completion;
 /// @return `nil` only when `error != nil`.
 - (void)getAggregatedDeliveryReceiptConversationSid:(nullable NSString *)conversationSid messageIndex:(nullable NSNumber *)messageIndex completion:(void(^)(TWCONDeliveryReceiptData *_Nullable, FlutterError *_Nullable))completion;
+/// @return `nil` only when `error != nil`.
+- (void)getDetailedDeliveryReceiptListConversationSid:(nullable NSString *)conversationSid messageIndex:(nullable NSNumber *)messageIndex completion:(void(^)(NSArray<TWCONDetailedDeliveryReceiptData *> *_Nullable, FlutterError *_Nullable))completion;
 @end
 
 extern void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONMessageApi> *_Nullable api);

@@ -1,6 +1,8 @@
 package twilio.flutter.twilio_conversations.methods
 
 import com.twilio.conversations.*
+import com.twilio.conversations.extensions.getDetailedDeliveryReceiptList
+import com.twilio.conversations.extensions.getMessageByIndex
 import com.twilio.util.ErrorInfo
 import com.twilio.conversations.extensions.updateMessageBody
 import kotlinx.coroutines.GlobalScope
@@ -220,6 +222,48 @@ class MessageMethods : Api.MessageApi {
             override fun onError(errorInfo: ErrorInfo) {
                 debug("getMediaContentTemporaryUrl => onError: $errorInfo")
                 result.error(TwilioException(errorInfo.code, errorInfo.message))
+            }
+        })
+    }
+
+    override fun getDetailedDeliveryReceiptList(
+        conversationSid: String,
+        messageIndex: Long,
+        result: Api.Result<List<Api.DetailedDeliveryReceiptData>>
+    ) {
+        debug("getDetailedDeliveryReceiptList => conversationSid: $conversationSid messageIndex: $messageIndex")
+        var client = TwilioConversationsPlugin.client ?: return result.error(
+            ClientNotInitializedException("Client is not initialized")
+        )
+
+        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+            override fun onSafeSuccess(item: Conversation) {
+                item.getMessageByIndex(messageIndex, object : SafeCallbackListener<Message> {
+                    override fun onSafeSuccess(item: Message) {
+                        item.getDetailedDeliveryReceiptList(object :
+                            SafeCallbackListener<List<DetailedDeliveryReceipt>> {
+                            override fun onSafeSuccess(item: List<DetailedDeliveryReceipt>) {
+                                debug("getDetailedDeliveryReceiptList => onSuccess")
+
+                                val elements = item.map {
+                                    Mapper.detailedDeliveryReceiptToPigeon(it)
+                                }
+
+                                return result.success(elements as List<Api.DetailedDeliveryReceiptData>?)
+                            }
+
+                            override fun onError(errorInfo: ErrorInfo) {
+                                debug("getDetailedDeliveryReceiptList => onError: $errorInfo")
+                                result.error(TwilioException(errorInfo.code, errorInfo.message))
+                            }
+                        })
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("getDetailedDeliveryReceiptList => onError: $errorInfo")
+                        result.error(TwilioException(errorInfo.code, errorInfo.message))
+                    }
+                })
             }
         })
     }

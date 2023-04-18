@@ -2,6 +2,7 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/src/message/delivery_receipt.dart';
+import 'package:twilio_conversations/src/message/detailed_delivery_receipt.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Message {
@@ -150,5 +151,18 @@ class Message {
     }
   }
 
-//TODO: implement getDetailedDeliveryReceiptList
+  Future<List<DetailedDeliveryReceipt?>>
+      getDetailedDeliveryReceiptList() async {
+    try {
+      final result = await TwilioConversations()
+          .messageApi
+          .getDetailedDeliveryReceiptList(conversationSid, messageIndex!);
+
+      return result.map((element) {
+        return DetailedDeliveryReceipt.fromPigeon(element!);
+      }).toList();
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
 }

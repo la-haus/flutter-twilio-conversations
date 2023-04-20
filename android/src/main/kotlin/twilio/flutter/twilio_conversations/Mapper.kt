@@ -164,8 +164,8 @@ object Mapper {
         result.channelMessageSid = detailedDeliveryReceipt.channelMessageSid
         result.messageSid = detailedDeliveryReceipt.messageSid
         result.participantSid  = detailedDeliveryReceipt.participantSid
-        result.dateCreatedAsDate = detailedDeliveryReceipt.dateCreatedAsDate.toString()
-        result.dateUpdatedAsDate = detailedDeliveryReceipt.dateUpdatedAsDate.toString()
+        result.dateCreatedAsDate = dateToString(detailedDeliveryReceipt.dateCreatedAsDate)
+        result.dateUpdatedAsDate = dateToString(detailedDeliveryReceipt.dateUpdatedAsDate)
         result.errorCode = detailedDeliveryReceipt.errorCode.toLong()
         return result
     }

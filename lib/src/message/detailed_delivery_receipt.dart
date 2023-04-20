@@ -14,8 +14,8 @@ class DetailedDeliveryReceipt {
 
   final String conversationSid;
   final String channelMessageSid;
-  final String dateCreatedAsDate;
-  final String dateUpdatedAsDate;
+  final String? dateCreatedAsDate;
+  final String? dateUpdatedAsDate;
   final int errorCode;
   final String messageSid;
   final String participantSid;

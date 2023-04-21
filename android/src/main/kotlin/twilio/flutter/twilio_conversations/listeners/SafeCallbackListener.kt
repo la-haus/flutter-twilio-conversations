@@ -2,6 +2,8 @@ package twilio.flutter.twilio_conversations.listeners
 
 import com.twilio.conversations.CallbackListener
 import com.twilio.util.ErrorInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -37,7 +39,7 @@ interface SafeSuspendCallbackListener<T> : CallbackListener<T> {
     override fun onSuccess(result: T) {
         try {
             if (result != null) {
-                GlobalScope.launch {
+                CoroutineScope(Dispatchers.IO).launch{
                     try {
                         onSafeSuccess(result)
                     } catch (e: Exception) {

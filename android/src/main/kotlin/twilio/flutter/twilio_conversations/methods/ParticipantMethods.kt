@@ -24,22 +24,27 @@ class ParticipantMethods : Api.ParticipantApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                val participant = item.getParticipantBySid(participantSid)
-                    ?: return result.error(NotFoundException("No participant found with SID: $participantSid"))
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    val participant = item.getParticipantBySid(participantSid)
+                        ?: return result.error(NotFoundException("No participant found with SID: $participantSid"))
 
-                participant.getAndSubscribeUser {
-                    debug("getUser => onSuccess")
-                    result.success(Mapper.userToPigeon(it))
+                    participant.getAndSubscribeUser {
+                        debug("getUser => onSuccess")
+                        result.success(Mapper.userToPigeon(it))
+                    }
                 }
-            }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("getUser => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("getUser => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (e: Exception) {
+            debug("getUser => onError: $e")
+            result.error(TwilioException(-1, e.message ?: "Unknown error"))
+        }
     }
 
     override fun setAttributes(
@@ -54,28 +59,33 @@ class ParticipantMethods : Api.ParticipantApi {
         val participantAttributes = Mapper.pigeonToAttributes(attributes)
             ?: return result.error(ConversionException("Could not convert $attributes to valid Attributes"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                val participant = item.getParticipantBySid(participantSid)
-                    ?: return result.error(NotFoundException("No participant found with SID: $participantSid"))
-                participant.setAttributes(participantAttributes, object : SafeStatusListener {
-                    override fun onSafeSuccess() {
-                        debug("setAttributes => onSuccess")
-                        result.success(null)
-                    }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    val participant = item.getParticipantBySid(participantSid)
+                        ?: return result.error(NotFoundException("No participant found with SID: $participantSid"))
+                    participant.setAttributes(participantAttributes, object : SafeStatusListener {
+                        override fun onSafeSuccess() {
+                            debug("setAttributes => onSuccess")
+                            result.success(null)
+                        }
 
-                    override fun onError(errorInfo: ErrorInfo) {
-                        debug("setAttributes => onError: $errorInfo")
-                        result.error(TwilioException(errorInfo.code, errorInfo.message))
-                    }
-                })
-            }
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("setAttributes => onError: $errorInfo")
+                            result.error(TwilioException(errorInfo.code, errorInfo.message))
+                        }
+                    })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("setAttributes => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("setAttributes => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (e: Exception) {
+            debug("setAttributes => onError: $e")
+            result.error(TwilioException(-1, e.message ?: "Unknown error"))
+        }
     }
 
     override fun remove(
@@ -87,28 +97,33 @@ class ParticipantMethods : Api.ParticipantApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                val participant = item.getParticipantBySid(participantSid)
-                    ?: return result.error(NotFoundException("No participant found with SID: $participantSid"))
-                participant.remove(object : SafeStatusListener {
-                    override fun onSafeSuccess() {
-                        debug("remove => onSuccess")
-                        result.success(null)
-                    }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    val participant = item.getParticipantBySid(participantSid)
+                        ?: return result.error(NotFoundException("No participant found with SID: $participantSid"))
+                    participant.remove(object : SafeStatusListener {
+                        override fun onSafeSuccess() {
+                            debug("remove => onSuccess")
+                            result.success(null)
+                        }
 
-                    override fun onError(errorInfo: ErrorInfo) {
-                        debug("remove => onError: $errorInfo")
-                        result.error(TwilioException(errorInfo.code, errorInfo.message))
-                    }
-                })
-            }
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("remove => onError: $errorInfo")
+                            result.error(TwilioException(errorInfo.code, errorInfo.message))
+                        }
+                    })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("remove => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("remove => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (e: Exception) {
+            debug("remove => onError: $e")
+            result.error(TwilioException(-1, e.message ?: "Unknown error"))
+        }
     }
 
     fun debug(message: String) {

@@ -22,23 +22,39 @@ class ConversationClientMethods : Api.ConversationClientApi {
 
     override fun updateToken(token: String, result: Api.Result<Void>) {
         debug("updateToken")
-        TwilioConversationsPlugin.client?.updateToken(token, object : SafeStatusListener {
-            override fun onSafeSuccess() {
-                debug("updateToken => onSuccess")
-                result.success(null)
-            }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("updateToken => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+        try {
+            TwilioConversationsPlugin.client?.updateToken(token, object : SafeStatusListener {
+                override fun onSafeSuccess() {
+                    debug("updateToken => onSuccess")
+                    result.success(null)
+                }
+
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("updateToken => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("updateToken => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun shutdown() {
         debug("shutdown")
-        TwilioConversationsPlugin.client?.shutdown()
-        disposeListeners()
+
+        try {
+            TwilioConversationsPlugin.client?.shutdown()
+        } catch (err: Exception) {
+            debug("shutdown => shutdown.onError: $err")
+        }
+
+        try {
+            disposeListeners()
+        } catch (err: Exception) {
+            debug("shutdown => disposeListeners.onError: $err")
+        }
     }
 
     override fun createConversation(
@@ -73,25 +89,32 @@ class ConversationClientMethods : Api.ConversationClientApi {
     override fun getMyConversations(result: Api.Result<MutableList<Api.ConversationData>>) {
         debug("getMyConversations")
         GlobalScope.launch {
-            val myConversations = TwilioConversationsPlugin.client?.myConversations
-            var conversationsSynchronized = false
+            try {
+                val myConversations = TwilioConversationsPlugin.client?.myConversations
+                var conversationsSynchronized = false
 
-            while (!conversationsSynchronized) {
-                conversationsSynchronized = true
+                while (!conversationsSynchronized) {
+                    conversationsSynchronized = true
 
-                val convoStatuses = myConversations?.map { it.synchronizationStatus }
-                convoStatuses?.forEach {
-                    conversationsSynchronized =
-                        (conversationsSynchronized && (it == Conversation.SynchronizationStatus.ALL))
+                    val convoStatuses = myConversations?.map { it.synchronizationStatus }
+                    convoStatuses?.forEach {
+                        conversationsSynchronized =
+                            (conversationsSynchronized && (it == Conversation.SynchronizationStatus.ALL))
+                    }
+
+                    delay(100)
                 }
 
-                delay(100)
-            }
-
-            launch(Dispatchers.Main) {
-                debug("getMyConversations => onSuccess")
-                val conversationsList = Mapper.conversationsListToPigeon(myConversations)
-                result.success(conversationsList.toMutableList())
+                launch(Dispatchers.Main) {
+                    debug("getMyConversations => onSuccess")
+                    val conversationsList = Mapper.conversationsListToPigeon(myConversations)
+                    result.success(conversationsList.toMutableList())
+                }
+            } catch (err: Exception) {
+                launch(Dispatchers.Main) {
+                    debug("getMyConversations => onError: $err")
+                    result.error(err)
+                }
             }
         }
     }
@@ -104,89 +127,119 @@ class ConversationClientMethods : Api.ConversationClientApi {
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
         debug("getConversations => conversationSidOrUniqueName: $conversationSidOrUniqueName")
-        client.getConversation(
-            conversationSidOrUniqueName,
-            object : SafeNullableCallbackListener<Conversation> {
-                override fun onSafeSuccess(item: Conversation?) {
-                    debug("getConversations => onSuccess")
-                    result.success(Mapper.conversationToPigeon(item))
-                }
 
-                override fun onError(errorInfo: ErrorInfo) {
-                    debug("getConversations => onError: $errorInfo")
-                    result.error(TwilioException(errorInfo.code, errorInfo.message))
-                }
-            })
+        try {
+            client.getConversation(
+                conversationSidOrUniqueName,
+                object : SafeNullableCallbackListener<Conversation> {
+                    override fun onSafeSuccess(item: Conversation?) {
+                        debug("getConversations => callback.onSuccess")
+                        result.success(Mapper.conversationToPigeon(item))
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("getConversations => callback.onError: $errorInfo")
+                        result.error(TwilioException(errorInfo.code, errorInfo.message))
+                    }
+                })
+        } catch (err: Exception) {
+            debug("getConversations => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun getMyUser(result: Api.Result<Api.UserData>) {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        val myUser = client.myUser
-        return result.success(Mapper.userToPigeon(myUser))
+        return try {
+            val myUser = client.myUser
+            result.success(Mapper.userToPigeon(myUser))
+        } catch (err: Exception) {
+            result.error(err)
+        }
     }
 
     override fun registerForNotification(tokenData: Api.TokenData, result: Api.Result<Void>) {
         val token: String = tokenData.token
             ?: return result.error(MissingParameterException("The parameter 'token' was not provided"))
 
-        TwilioConversationsPlugin.client?.registerFCMToken(
-            ConversationsClient.FCMToken(token),
-            object : SafeStatusListener {
-                override fun onSafeSuccess() {
-                    TwilioConversationsPlugin.flutterClientApi.registered { }
-                    result.success(null)
-                }
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-                override fun onError(errorInfo: ErrorInfo) {
-                    super.onError(errorInfo)
-                    TwilioConversationsPlugin.flutterClientApi.registrationFailed(
-                        Mapper.errorInfoToPigeon(
-                            errorInfo
+        try {
+            client.registerFCMToken(
+                ConversationsClient.FCMToken(token),
+                object : SafeStatusListener {
+                    override fun onSafeSuccess() {
+                        TwilioConversationsPlugin.flutterClientApi.registered { }
+                        result.success(null)
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        super.onError(errorInfo)
+                        TwilioConversationsPlugin.flutterClientApi.registrationFailed(
+                            Mapper.errorInfoToPigeon(
+                                errorInfo
+                            )
+                        ) { }
+                        result.error(
+                            TwilioException(
+                                errorInfo.code,
+                                "Failed to register for FCM notifications: ${errorInfo.message}"
+                            )
                         )
-                    ) { }
-                    result.error(
-                        TwilioException(
-                            errorInfo.code,
-                            "Failed to register for FCM notifications: ${errorInfo.message}"
-                        )
-                    )
-                }
-            })
+                    }
+                })
+        } catch (err: Exception) {
+            debug("registerForNotification => onError: $err")
+            result.error(err)
+        }
     }
 
     override fun unregisterForNotification(tokenData: Api.TokenData, result: Api.Result<Void>) {
         val token: String = tokenData.token
             ?: return result.error(MissingParameterException("The parameter 'token' was not provided"))
 
-        TwilioConversationsPlugin.client?.unregisterFCMToken(
-            ConversationsClient.FCMToken(token),
-            object : SafeStatusListener {
-                override fun onSafeSuccess() {
-                    TwilioConversationsPlugin.flutterClientApi.deregistered { }
-                    result.success(null)
-                }
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-                override fun onError(errorInfo: ErrorInfo) {
-                    super.onError(errorInfo)
-                    TwilioConversationsPlugin.flutterClientApi.deregistrationFailed(
-                        Mapper.errorInfoToPigeon(
-                            errorInfo
+        try {
+            client.unregisterFCMToken(
+                ConversationsClient.FCMToken(token),
+                object : SafeStatusListener {
+                    override fun onSafeSuccess() {
+                        TwilioConversationsPlugin.flutterClientApi.deregistered { }
+                        result.success(null)
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        super.onError(errorInfo)
+                        TwilioConversationsPlugin.flutterClientApi.deregistrationFailed(
+                            Mapper.errorInfoToPigeon(
+                                errorInfo
+                            )
+                        ) { }
+                        result.error(
+                            TwilioException(
+                                errorInfo.code,
+                                "Failed to register for FCM notifications: ${errorInfo.message}"
+                            )
                         )
-                    ) { }
-                    result.error(
-                        TwilioException(
-                            errorInfo.code,
-                            "Failed to register for FCM notifications: ${errorInfo.message}"
-                        )
-                    )
-                }
-            })
+                    }
+                })
+        } catch (err: Exception) {
+            debug("unregisterForNotification => onError: $err")
+            result.error(err)
+        }
     }
 
     private fun disposeListeners() {
-        TwilioConversationsPlugin.conversationListeners.clear()
+        try {
+            TwilioConversationsPlugin.conversationListeners.clear()
+        } catch (err: Exception) {
+            debug("disposeListeners => onError: $err")
+        }
     }
 
     fun debug(message: String) {

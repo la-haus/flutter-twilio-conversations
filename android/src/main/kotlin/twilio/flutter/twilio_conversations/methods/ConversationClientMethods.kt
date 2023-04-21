@@ -156,6 +156,7 @@ class ConversationClientMethods : Api.ConversationClientApi {
             val myUser = client.myUser
             result.success(Mapper.userToPigeon(myUser))
         } catch (err: Exception) {
+            debug("getMyUser => onError: $err")
             result.error(err)
         }
     }

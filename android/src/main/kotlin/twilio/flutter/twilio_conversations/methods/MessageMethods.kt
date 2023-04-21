@@ -16,6 +16,7 @@ import twilio.flutter.twilio_conversations.exceptions.NotFoundException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
 import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
 import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
+import twilio.flutter.twilio_conversations.listeners.SafeSuspendCallbackListener
 
 class MessageMethods : Api.MessageApi {
     private val TAG = "MessageMethods"
@@ -183,10 +184,9 @@ class MessageMethods : Api.MessageApi {
         try {
             client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
                 override fun onSafeSuccess(item: Conversation) {
-                    item.getMessageByIndex(messageIndex, object : SafeCallbackListener<Message> {
-                        override fun onSafeSuccess(item: Message) {
-                            // TODO: Handle error case
-                            GlobalScope.launch { item.updateMessageBody(messageBody) }
+                    item.getMessageByIndex(messageIndex, object : SafeSuspendCallbackListener<Message> {
+                        override suspend fun onSafeSuccess(item: Message) {
+                            item.updateMessageBody(messageBody)
                             result.success(null)
                         }
 

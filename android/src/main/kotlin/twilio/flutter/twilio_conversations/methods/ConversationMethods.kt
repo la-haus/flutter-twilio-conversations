@@ -3,8 +3,6 @@ import com.twilio.conversations.Conversation
 import com.twilio.util.ErrorInfo
 import com.twilio.conversations.Message
 import com.twilio.conversations.extensions.sendMessage
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.FileInputStream
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
@@ -15,6 +13,7 @@ import twilio.flutter.twilio_conversations.exceptions.NotFoundException
 import twilio.flutter.twilio_conversations.exceptions.TwilioException
 import twilio.flutter.twilio_conversations.listeners.SafeCallbackListener
 import twilio.flutter.twilio_conversations.listeners.SafeNullableCallbackListener
+import twilio.flutter.twilio_conversations.listeners.SafeSuspendCallbackListener
 import twilio.flutter.twilio_conversations.listeners.SafeStatusListener
 
 class ConversationMethods : Api.ConversationApi {
@@ -47,7 +46,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("join => onError: $err")
             return result.error(err)
         }
     }
@@ -78,7 +78,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("leave => onError: $err")
             return result.error(err)
         }
     }
@@ -108,7 +109,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("destroy => onError: $err")
             return result.error(err)
         }
     }
@@ -131,7 +133,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("typing => onError: $err")
             return result.error(err)
         }
     }
@@ -146,72 +149,35 @@ class ConversationMethods : Api.ConversationApi {
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
         try {
-            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-                override fun onSafeSuccess(item: Conversation) {
-                    GlobalScope.launch {
-                        val message = item.sendMessage {
-                            this.body = options.body
+            client.getConversation(conversationSid, object : SafeSuspendCallbackListener<Conversation> {
+                override suspend fun onSafeSuccess(item: Conversation) {
+                    val message = item.sendMessage {
+                        this.body = options.body
 
-                            val attributes = options.attributes
-                            if (attributes != null) {
-                                val mappedAttributes = Mapper.pigeonToAttributes(attributes)
-                                if (mappedAttributes != null) {
-                                    this.attributes = mappedAttributes
-                                }
+                        val attributes = options.attributes
+                        if (attributes != null) {
+                            val mappedAttributes = Mapper.pigeonToAttributes(attributes)
+                            if (mappedAttributes != null) {
+                                this.attributes = mappedAttributes
                             }
-
-                            val inputPath = options.inputPath
-                            val mimeType = options.mimeType
-
-                            debug("sendMessage => checking inputPath and mimeType: $inputPath, $mimeType")
-
-                            if (inputPath != null && mimeType != null) {
-                                val filename = options.filename
-
-                                if (filename != null) {
-                                    debug("sendMessage => uploading 1")
-                                    addMedia(FileInputStream(inputPath), mimeType, filename)
-                                } else {
-                                    debug("sendMessage => uploading 2")
-                                    addMedia(FileInputStream(inputPath), mimeType)
-                                }
-
-                                debug("sendMessage => uploading 3")
-                            }
-
-                            // TODO: implement MediaProgressListener
-                            //            if (options.mediaProgressListenerId != null) {
-                            //                messageOptions.withMediaProgressListener(object : ProgressListener() {
-                            //                    override fun onStarted() {
-                            //                        TwilioConversationsPlugin.mediaProgressSink?.success({
-                            //                            "mediaProgressListenerId" to options["mediaProgressListenerId"]
-                            //                            "name" to "started"
-                            //                        })
-                            //                    }
-                            //
-                            //                    override fun onProgress(bytes: Long) {
-                            //                        TwilioConversationsPlugin.mediaProgressSink?.success({
-                            //                            "mediaProgressListenerId" to options["mediaProgressListenerId"]
-                            //                            "name" to "progress"
-                            //                            "data" to bytes
-                            //                        })
-                            //                    }
-                            //
-                            //                    override fun onCompleted(mediaSid: String) {
-                            //                        TwilioConversationsPlugin.mediaProgressSink?.success({
-                            //                            "mediaProgressListenerId" to options["mediaProgressListenerId"]
-                            //                            "name" to "completed"
-                            //                            "data" to mediaSid
-                            //                        })
-                            //                    }
-                            //                })
-                            //            }
                         }
 
-                        debug("sendMessage => onSuccess")
-                        val messageData = Mapper.messageToPigeon(message)
-                        result.success(messageData)
+                        val inputPath = options.inputPath
+                        val mimeType = options.mimeType
+                        if (inputPath != null && mimeType != null) {
+                            val filename = options.filename
+
+                            if (filename != null) {
+                                addMedia(FileInputStream(inputPath), mimeType, filename)
+                            } else {
+                                addMedia(FileInputStream(inputPath), mimeType)
+                            }
+                        }
                     }
+
+                    debug("sendMessage => onSuccess")
+                    val messageData = Mapper.messageToPigeon(message)
+                    result.success(messageData)
                 }
 
                 override fun onError(errorInfo: ErrorInfo) {
@@ -219,7 +185,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("sendMessage => onError: $err")
             return result.error(err)
         }
     }
@@ -254,7 +221,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("addParticipantByIdentity => onError: $err")
             return result.error(err)
         }
     }
@@ -292,7 +260,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("removeParticipant => onError: $err")
             return result.error(err)
         }
     }
@@ -327,7 +296,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("removeParticipantByIdentity => onError: $err")
             return result.error(err)
         }
     }
@@ -341,20 +311,25 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                val participant = item.getParticipantByIdentity(identity)
-                    ?: return result.error(NotFoundException("No participant found with identity $identity"))
-                debug("getParticipantByIdentity => onSuccess")
-                val participantData = Mapper.participantToPigeon(participant)
-                result.success(participantData)
-            }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    val participant = item.getParticipantByIdentity(identity)
+                        ?: return result.error(NotFoundException("No participant found with identity $identity"))
+                    debug("getParticipantByIdentity => onSuccess")
+                    val participantData = Mapper.participantToPigeon(participant)
+                    result.success(participantData)
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("getParticipantByIdentity => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("getParticipantByIdentity => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("getParticipantByIdentity => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun getParticipantBySid(
@@ -366,20 +341,25 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                val participant = item.getParticipantBySid(participantSid)
-                    ?: return result.error(NotFoundException("No participant found with sid $participantSid"))
-                debug("getParticipantBySid => onSuccess")
-                val participantData = Mapper.participantToPigeon(participant)
-                result.success(participantData)
-            }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    val participant = item.getParticipantBySid(participantSid)
+                        ?: return result.error(NotFoundException("No participant found with sid $participantSid"))
+                    debug("getParticipantBySid => onSuccess")
+                    val participantData = Mapper.participantToPigeon(participant)
+                    result.success(participantData)
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("getParticipantBySid => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("getParticipantBySid => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("getParticipantBySid => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun getParticipantsList(
@@ -390,18 +370,23 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                debug("getParticipantsList => onSuccess")
-                val participantsListData = Mapper.participantListToPigeon(item.participantsList)
-                result.success(participantsListData.toMutableList())
-            }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    debug("getParticipantsList => onSuccess")
+                    val participantsListData = Mapper.participantListToPigeon(item.participantsList)
+                    result.success(participantsListData.toMutableList())
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("getParticipantsList => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("getParticipantsList => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("getParticipantsList => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun getMessagesCount(conversationSid: String, result: Api.Result<Api.MessageCount>) {
@@ -433,7 +418,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("getMessagesCount => onError: $err")
             return result.error(err)
         }
     }
@@ -464,7 +450,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("getUnreadMessagesCount => onError: $err")
             return result.error(err)
         }
     }
@@ -478,30 +465,35 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                item.advanceLastReadMessageIndex(
-                    lastReadMessageIndex,
-                    object : SafeCallbackListener<Long> {
-                        override fun onSafeSuccess(item: Long) {
-                            debug("advanceLastReadMessageIndex => onSuccess")
-                            val unreadMessages = Api.MessageCount()
-                            unreadMessages.count = item
-                            result.success(unreadMessages)
-                        }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    item.advanceLastReadMessageIndex(
+                        lastReadMessageIndex,
+                        object : SafeCallbackListener<Long> {
+                            override fun onSafeSuccess(item: Long) {
+                                debug("advanceLastReadMessageIndex => onSuccess")
+                                val unreadMessages = Api.MessageCount()
+                                unreadMessages.count = item
+                                result.success(unreadMessages)
+                            }
 
-                        override fun onError(errorInfo: ErrorInfo) {
-                            debug("advanceLastReadMessageIndex => onError: $errorInfo")
-                            result.error(TwilioException(errorInfo.code, errorInfo.message))
-                        }
-                    })
-            }
+                            override fun onError(errorInfo: ErrorInfo) {
+                                debug("advanceLastReadMessageIndex => onError: $errorInfo")
+                                result.error(TwilioException(errorInfo.code, errorInfo.message))
+                            }
+                        })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("advanceLastReadMessageIndex => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("advanceLastReadMessageIndex => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("advanceLastReadMessageIndex => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun setLastReadMessageIndex(
@@ -513,28 +505,35 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                item.setLastReadMessageIndex(lastReadMessageIndex, object : SafeCallbackListener<Long> {
-                    override fun onSafeSuccess(item: Long) {
-                        debug("setLastReadMessageIndex => onSuccess")
-                        val unreadMessages = Api.MessageCount()
-                        unreadMessages.count = item
-                        result.success(unreadMessages)
-                    }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    item.setLastReadMessageIndex(
+                        lastReadMessageIndex,
+                        object : SafeCallbackListener<Long> {
+                            override fun onSafeSuccess(item: Long) {
+                                debug("setLastReadMessageIndex => onSuccess")
+                                val unreadMessages = Api.MessageCount()
+                                unreadMessages.count = item
+                                result.success(unreadMessages)
+                            }
 
-                    override fun onError(errorInfo: ErrorInfo) {
-                        debug("setLastReadMessageIndex => onError: $errorInfo")
-                        result.error(TwilioException(errorInfo.code, errorInfo.message))
-                    }
-                })
-            }
+                            override fun onError(errorInfo: ErrorInfo) {
+                                debug("setLastReadMessageIndex => onError: $errorInfo")
+                                result.error(TwilioException(errorInfo.code, errorInfo.message))
+                            }
+                        })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("setLastReadMessageIndex => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("setLastReadMessageIndex => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("setLastReadMessageIndex => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun setAllMessagesRead(
@@ -545,28 +544,33 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                item.setAllMessagesRead(object : SafeCallbackListener<Long> {
-                    override fun onSafeSuccess(item: Long) {
-                        debug("setAllMessagesRead => onSuccess")
-                        val unreadMessages = Api.MessageCount()
-                        unreadMessages.count = item
-                        result.success(unreadMessages)
-                    }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    item.setAllMessagesRead(object : SafeCallbackListener<Long> {
+                        override fun onSafeSuccess(item: Long) {
+                            debug("setAllMessagesRead => onSuccess")
+                            val unreadMessages = Api.MessageCount()
+                            unreadMessages.count = item
+                            result.success(unreadMessages)
+                        }
 
-                    override fun onError(errorInfo: ErrorInfo) {
-                        debug("setAllMessagesRead => onError: $errorInfo")
-                        result.error(TwilioException(errorInfo.code, errorInfo.message))
-                    }
-                })
-            }
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("setAllMessagesRead => onError: $errorInfo")
+                            result.error(TwilioException(errorInfo.code, errorInfo.message))
+                        }
+                    })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("setAllMessagesRead => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("setAllMessagesRead => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("setAllMessagesRead => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun setAllMessagesUnread(
@@ -577,28 +581,33 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                item.setAllMessagesUnread(object : SafeCallbackListener<Long> {
-                    override fun onSafeSuccess(item: Long) {
-                        debug("setAllMessagesUnread => onSuccess: $item")
-                        val unreadMessages = Api.MessageCount()
-                        unreadMessages.count = item
-                        result.success(unreadMessages)
-                    }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    item.setAllMessagesUnread(object : SafeCallbackListener<Long> {
+                        override fun onSafeSuccess(item: Long) {
+                            debug("setAllMessagesUnread => onSuccess: $item")
+                            val unreadMessages = Api.MessageCount()
+                            unreadMessages.count = item
+                            result.success(unreadMessages)
+                        }
 
-                    override fun onError(errorInfo: ErrorInfo) {
-                        debug("setAllMessagesUnread => onError: $errorInfo")
-                        result.error(TwilioException(errorInfo.code, errorInfo.message))
-                    }
-                })
-            }
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("setAllMessagesUnread => onError: $errorInfo")
+                            result.error(TwilioException(errorInfo.code, errorInfo.message))
+                        }
+                    })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("setAllMessagesUnread => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("setAllMessagesUnread => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("setAllMessagesUnread => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun getParticipantsCount(conversationSid: String, result: Api.Result<Long>) {
@@ -628,7 +637,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("getParticipantsCount => onError: $err")
             return result.error(err)
         }
     }
@@ -644,26 +654,31 @@ class ConversationMethods : Api.ConversationApi {
         val conversationAttributes = Mapper.pigeonToAttributes(attributes)
             ?: return result.error(ConversionException("Could not convert $attributes to valid Attributes"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                item.setAttributes(conversationAttributes, object : SafeStatusListener {
-                    override fun onSafeSuccess() {
-                        debug("setAttributes => onSuccess")
-                        result.success(null)
-                    }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    item.setAttributes(conversationAttributes, object : SafeStatusListener {
+                        override fun onSafeSuccess() {
+                            debug("setAttributes => onSuccess")
+                            result.success(null)
+                        }
 
-                    override fun onError(errorInfo: ErrorInfo) {
-                        debug("setAttributes => onError: $errorInfo")
-                        result.error(TwilioException(errorInfo.code, errorInfo.message))
-                    }
-                })
-            }
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("setAttributes => onError: $errorInfo")
+                            result.error(TwilioException(errorInfo.code, errorInfo.message))
+                        }
+                    })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("setAttributes => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("setAttributes => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("setAttributes => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun removeMessage(
@@ -675,16 +690,31 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                val conversation = item
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    val conversation = item
 
-                conversation.getMessageByIndex(messageIndex, object : SafeCallbackListener<Message> {
-                    override fun onSafeSuccess(item: Message) {
-                        conversation.removeMessage(item, object : SafeStatusListener {
-                            override fun onSafeSuccess() {
-                                debug("removeMessage => onSuccess")
-                                result.success(true)
+                    conversation.getMessageByIndex(
+                        messageIndex,
+                        object : SafeCallbackListener<Message> {
+                            override fun onSafeSuccess(item: Message) {
+                                conversation.removeMessage(item, object : SafeStatusListener {
+                                    override fun onSafeSuccess() {
+                                        debug("removeMessage => onSuccess")
+                                        result.success(true)
+                                    }
+
+                                    override fun onError(errorInfo: ErrorInfo) {
+                                        debug("removeMessage => onError: $errorInfo")
+                                        result.error(
+                                            TwilioException(
+                                                errorInfo.code,
+                                                errorInfo.message
+                                            )
+                                        )
+                                    }
+                                })
                             }
 
                             override fun onError(errorInfo: ErrorInfo) {
@@ -692,20 +722,17 @@ class ConversationMethods : Api.ConversationApi {
                                 result.error(TwilioException(errorInfo.code, errorInfo.message))
                             }
                         })
-                    }
+                }
 
-                    override fun onError(errorInfo: ErrorInfo) {
-                        debug("removeMessage => onError: $errorInfo")
-                        result.error(TwilioException(errorInfo.code, errorInfo.message))
-                    }
-                })
-            }
-
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("removeMessage => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("removeMessage => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("removeMessage => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun getMessagesAfter(
@@ -718,31 +745,36 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                item.getMessagesAfter(
-                    index,
-                    count.toInt(),
-                    object : SafeCallbackListener<List<Message>> {
-                        override fun onSafeSuccess(item: List<Message>) {
-                            debug("getMessagesAfter => onSuccess")
-                            val messagesMap = item.map { Mapper.messageToPigeon(it) }
-                            result.success(messagesMap.toMutableList())
-                        }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    item.getMessagesAfter(
+                        index,
+                        count.toInt(),
+                        object : SafeCallbackListener<List<Message>> {
+                            override fun onSafeSuccess(item: List<Message>) {
+                                debug("getMessagesAfter => onSuccess")
+                                val messagesMap = item.map { Mapper.messageToPigeon(it) }
+                                result.success(messagesMap.toMutableList())
+                            }
 
-                        override fun onError(errorInfo: ErrorInfo) {
-                            debug("getMessagesAfter => onError: $errorInfo")
-                            result.error(TwilioException(errorInfo.code, errorInfo.message))
-                        }
-                    })
-            }
+                            override fun onError(errorInfo: ErrorInfo) {
+                                debug("getMessagesAfter => onError: $errorInfo")
+                                result.error(TwilioException(errorInfo.code, errorInfo.message))
+                            }
+                        })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("getMessagesAfter => onError: $errorInfo")
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("getMessagesAfter => onError: $errorInfo")
 
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("getMessagesAfter => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun getMessagesBefore(
@@ -755,28 +787,36 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                item.getMessagesBefore(index, count.toInt(), object : SafeCallbackListener<List<Message>> {
-                    override fun onSafeSuccess(item: List<Message>) {
-                        debug("getMessagesBefore => onSuccess")
-                        val messagesMap = item.map { Mapper.messageToPigeon(it) }
-                        result.success(messagesMap.toMutableList())
-                    }
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    item.getMessagesBefore(
+                        index,
+                        count.toInt(),
+                        object : SafeCallbackListener<List<Message>> {
+                            override fun onSafeSuccess(item: List<Message>) {
+                                debug("getMessagesBefore => onSuccess")
+                                val messagesMap = item.map { Mapper.messageToPigeon(it) }
+                                result.success(messagesMap.toMutableList())
+                            }
 
-                    override fun onError(errorInfo: ErrorInfo) {
-                        debug("getMessagesBefore => onError: $errorInfo")
-                        result.error(TwilioException(errorInfo.code, errorInfo.message))
-                    }
-                })
-            }
+                            override fun onError(errorInfo: ErrorInfo) {
+                                debug("getMessagesBefore => onError: $errorInfo")
+                                result.error(TwilioException(errorInfo.code, errorInfo.message))
+                            }
+                        })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("getMessagesBefore => onError: $errorInfo")
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("getMessagesBefore => onError: $errorInfo")
 
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("getMessagesBefore => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun getMessageByIndex(
@@ -788,36 +828,41 @@ class ConversationMethods : Api.ConversationApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(ClientNotInitializedException("Client is not initialized"))
 
-        client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
-            override fun onSafeSuccess(item: Conversation) {
-                item.getMessageByIndex(messageIndex, object : SafeCallbackListener<Message> {
-                    override fun onSafeSuccess(item: Message) {
-                        // Android SDK seems to think it's fine to return a different message
-                        // if one with the given `messageIndex` does not exist. iOS throws
-                        // an exception as one might expect.
-                        // Therefore, we do some validation here on the Android side and throw
-                        // an exception in order to achieve behaviour that is consistent across platforms.
-                        if (item.messageIndex == messageIndex) {
-                            debug("getMessageByIndex => onSuccess")
-                            result.success(Mapper.messageToPigeon(item))
-                        } else {
-                            debug("getMessageByIndex => onError: No message found with messageIndex: $messageIndex")
-                            result.error(NotFoundException("No message found with messageIndex: $messageIndex"))
+        try {
+            client.getConversation(conversationSid, object : SafeCallbackListener<Conversation> {
+                override fun onSafeSuccess(item: Conversation) {
+                    item.getMessageByIndex(messageIndex, object : SafeCallbackListener<Message> {
+                        override fun onSafeSuccess(item: Message) {
+                            // Android SDK seems to think it's fine to return a different message
+                            // if one with the given `messageIndex` does not exist. iOS throws
+                            // an exception as one might expect.
+                            // Therefore, we do some validation here on the Android side and throw
+                            // an exception in order to achieve behaviour that is consistent across platforms.
+                            if (item.messageIndex == messageIndex) {
+                                debug("getMessageByIndex => onSuccess")
+                                result.success(Mapper.messageToPigeon(item))
+                            } else {
+                                debug("getMessageByIndex => onError: No message found with messageIndex: $messageIndex")
+                                result.error(NotFoundException("No message found with messageIndex: $messageIndex"))
+                            }
                         }
-                    }
 
-                    override fun onError(errorInfo: ErrorInfo) {
-                        debug("getMessageByIndex => onError: $errorInfo")
-                        result.error(TwilioException(errorInfo.code, errorInfo.message))
-                    }
-                })
-            }
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("getMessageByIndex => onError: $errorInfo")
+                            result.error(TwilioException(errorInfo.code, errorInfo.message))
+                        }
+                    })
+                }
 
-            override fun onError(errorInfo: ErrorInfo) {
-                debug("getMessageByIndex => onError: $errorInfo")
-                result.error(TwilioException(errorInfo.code, errorInfo.message))
-            }
-        })
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("getMessageByIndex => onError: $errorInfo")
+                    result.error(TwilioException(errorInfo.code, errorInfo.message))
+                }
+            })
+        } catch (err: Exception) {
+            debug("getMessageByIndex => onError: $err")
+            return result.error(err)
+        }
     }
 
     override fun getLastMessages(
@@ -852,9 +897,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
-            return result.error(err)
-        } catch (err: IllegalStateException) {
+        } catch (err: Exception) {
+            debug("getLastMessages => onError: $err")
             return result.error(err)
         }
     }
@@ -889,7 +933,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("setFriendlyName => onError: $err")
             return result.error(err)
         }
     }
@@ -927,7 +972,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("setNotificationLevel => onError: $err")
             return result.error(err)
         }
     }
@@ -962,7 +1008,8 @@ class ConversationMethods : Api.ConversationApi {
                     result.error(TwilioException(errorInfo.code, errorInfo.message))
                 }
             })
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
+            debug("setUniqueName => onError: $err")
             return result.error(err)
         }
     }

@@ -103,5 +103,7 @@ class TwilioConversationsPlugin : FlutterPlugin {
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         debug("TwilioConversationsPlugin.onDetachedFromEngine")
+
+        initialized = false
     }
 }

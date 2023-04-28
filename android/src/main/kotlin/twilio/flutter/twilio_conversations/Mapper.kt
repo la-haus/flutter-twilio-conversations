@@ -55,8 +55,10 @@ object Mapper {
         return conversations.mapNotNull { conversationToPigeon(it) }
     }
 
-    fun conversationToPigeon(conversation: Conversation?): Api.ConversationData? {
-        if (conversation == null) return null
+    fun conversationToPigeon(conversation: Conversation?): Api.ConversationData {
+        if (conversation == null) {
+            throw IllegalArgumentException("Conversation cannot be null")
+        }
 
         // Setting flutter event listener for the given channel if one does not yet exist.
         if (conversation.sid != null && !TwilioConversationsPlugin.conversationListeners.containsKey(
@@ -68,6 +70,7 @@ object Mapper {
                 ConversationListener(conversation.sid)
             conversation.addListener(TwilioConversationsPlugin.conversationListeners[conversation.sid])
         }
+
 
         val result = Api.ConversationData()
         result.createdBy = conversation.createdBy
@@ -119,10 +122,11 @@ object Mapper {
         return participants.mapNotNull { participantToPigeon(it) }
     }
 
-    fun participantToPigeon(participant: Participant?): Api.ParticipantData? {
+    fun participantToPigeon(participant: Participant?): Api.ParticipantData {
         if (participant == null) {
-            return null
+            throw IllegalArgumentException("Participant cannot be null")
         }
+
         val result = Api.ParticipantData()
         result.sid = participant.sid
         result.conversationSid = participant.conversation.sid
@@ -163,17 +167,17 @@ object Mapper {
         result.conversationSid = detailedDeliveryReceipt.conversationSid
         result.channelMessageSid = detailedDeliveryReceipt.channelMessageSid
         result.messageSid = detailedDeliveryReceipt.messageSid
-        result.participantSid  = detailedDeliveryReceipt.participantSid
+        result.participantSid = detailedDeliveryReceipt.participantSid
         result.dateCreatedAsDate = dateToString(detailedDeliveryReceipt.dateCreatedAsDate)
         result.dateUpdatedAsDate = dateToString(detailedDeliveryReceipt.dateUpdatedAsDate)
         result.errorCode = detailedDeliveryReceipt.errorCode.toLong()
         return result
     }
 
-    fun userToPigeon(user: User?): Api.UserData? {
-        if (user == null) return null
-        val result = Api.UserData()
+    fun userToPigeon(user: User?): Api.UserData {
+        if (user == null) throw IllegalArgumentException("User cannot be null")
 
+        val result = Api.UserData()
         result.friendlyName = user.friendlyName
         result.attributes = attributesToPigeon(user.attributes)
         result.identity = user.identity

@@ -12,6 +12,7 @@ class ConversationClient extends FlutterConversationClientApi {
   ConnectionState connectionState = ConnectionState.UNKNOWN;
 
   bool _isReachabilityEnabled = false;
+
   bool get isReachabilityEnabled => _isReachabilityEnabled;
 
   final StreamController<String> _onAddedToConversationNotificationCtrl =
@@ -35,7 +36,7 @@ class ConversationClient extends FlutterConversationClientApi {
   final StreamController<ConnectionState> _onConnectionStateCtrl =
       StreamController<ConnectionState>.broadcast();
 
-  /// Called when client connnection state has changed.
+  /// Called when client connection state has changed.
   late Stream<ConnectionState> onConnectionState;
 
   final StreamController<ClientSynchronizationStatus>
@@ -169,12 +170,12 @@ class ConversationClient extends FlutterConversationClientApi {
     FlutterConversationClientApi.setup(this);
   }
 
-  void updateFromMap(Map<String, dynamic> json) {
-    myIdentity = json['myIdentity'] as String;
+  void updateFromObjectList(List<Object?> attributes) {
+    myIdentity = attributes[0] as String;
     connectionState = EnumToString.fromString(
-            ConnectionState.values, json['connectionState']) ??
+            ConnectionState.values, attributes[1] as String) ??
         ConnectionState.UNKNOWN;
-    _isReachabilityEnabled = json['isReachabilityEnabled'] ?? false;
+    _isReachabilityEnabled = attributes[2] as bool ?? false;
   }
 
   /// Updates the authentication token for this client.
@@ -301,6 +302,7 @@ class ConversationClient extends FlutterConversationClientApi {
       conversations[sid]?.updateFromMap(map);
     }
   }
+
   //#endregion
 
   @override

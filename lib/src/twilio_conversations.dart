@@ -87,7 +87,7 @@ class TwilioConversations extends FlutterLoggingApi {
       result = await pluginApi.create(jwtToken, properties.toPigeon());
 
       conversationClient
-          ?.updateFromMap(Map<String, dynamic>.from(result.encode() as Map));
+          ?.updateFromObjectList(result.encode() as List<Object?>);
     } catch (e) {
       conversationClient = null;
       log('create => onError: $e');

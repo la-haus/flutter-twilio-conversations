@@ -101,9 +101,23 @@ class TwilioConversationsPlugin : FlutterPlugin {
         flutterLoggingApi = Api.FlutterLoggingApi(flutterPluginBinding.binaryMessenger)
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-        debug("TwilioConversationsPlugin.onDetachedFromEngine")
+    override fun onDetachedFromEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        Log.d(LOG_TAG, "TwilioConversationsPlugin.onDetachedFromEngine")
 
         initialized = false
+        instance = this
+        messenger = flutterPluginBinding.binaryMessenger
+        applicationContext = flutterPluginBinding.applicationContext
+
+        Api.PluginApi.setup(flutterPluginBinding.binaryMessenger, null)
+        Api.ConversationClientApi.setup(flutterPluginBinding.binaryMessenger, null)
+        Api.ConversationApi.setup(flutterPluginBinding.binaryMessenger, null)
+        Api.ParticipantApi.setup(flutterPluginBinding.binaryMessenger, null)
+        Api.MessageApi.setup(flutterPluginBinding.binaryMessenger, null)
+        Api.UserApi.setup(flutterPluginBinding.binaryMessenger, null)
+
+        flutterClientApi = Api.FlutterConversationClientApi(flutterPluginBinding.binaryMessenger)
+        flutterLoggingApi = Api.FlutterLoggingApi(flutterPluginBinding.binaryMessenger)
+
     }
 }

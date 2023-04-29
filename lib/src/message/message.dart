@@ -73,16 +73,16 @@ class Message {
   // Construct from a list of attributes
   factory Message.fromObjectList(List<Object?> attributes) {
     final message = Message(
-      attributes[0] as String,
-      attributes[2] as String,
+      castString(attributes[0]),
+      castString(attributes[2]),
       DateTime.parse(attributes[10] as String),
       DateTime.parse(attributes[11] as String),
       castString(attributes[12]),
       attributes[8] as String,
       castString(attributes[3]),
-      attributes[4] as String,
+      castString(attributes[4]),
       castString(attributes[9]),
-      attributes[1] as int,
+      castInt(attributes[1]),
       EnumToString.fromString(MessageType.values, attributes[5] as String) ??
           MessageType.TEXT,
       attributes[6] as bool,

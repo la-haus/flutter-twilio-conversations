@@ -1,6 +1,7 @@
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
+import 'package:twilio_conversations/src/utils/cast.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Participant {
@@ -72,11 +73,11 @@ class Participant {
       attributes[3] != null
           ? Attributes.fromObjectList(attributes[3] as List<Object?>)
           : Attributes(AttributesType.NULL, null),
-      attributes[4] as String,
-      attributes[5] as String,
-      attributes[6] as String,
-      attributes[7] as int,
-      attributes[8] as String,
+      castString(attributes[4]),
+      castString(attributes[5]),
+      castString(attributes[6]),
+      castInt(attributes[7]),
+      castString(attributes[8]),
     );
     return participant;
   }

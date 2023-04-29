@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
+import 'package:twilio_conversations/src/utils/cast.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Conversation {
@@ -159,8 +160,8 @@ class Conversation {
     attributes = objectAttributes[1] == null
         ? null
         : Attributes.fromObjectList(objectAttributes[1] as List<Object?>);
-    uniqueName = objectAttributes[2] as String?;
-    friendlyName = objectAttributes[3] as String?;
+    uniqueName = castString(objectAttributes[2]);
+    friendlyName = castString(objectAttributes[3]);
 
     status = EnumToString.fromString(
             ConversationStatus.values, (objectAttributes[4] as String)) ??
@@ -174,15 +175,15 @@ class Conversation {
     dateCreated = objectAttributes[6] == null
         ? null
         : DateTime.parse(objectAttributes[6] as String);
-    createdBy = objectAttributes[7] as String?;
+    createdBy = castString(objectAttributes[7]);
     dateUpdated = objectAttributes[8] == null
         ? null
         : DateTime.parse(objectAttributes[8] as String);
     _lastMessageDate = objectAttributes[9] == null
         ? null
         : DateTime.parse(objectAttributes[9] as String);
-    _lastReadMessageIndex = objectAttributes[10] as int?;
-    _lastMessageIndex = objectAttributes[11] as int?;
+    _lastReadMessageIndex = castInt(objectAttributes[10]);
+    _lastMessageIndex = castInt(objectAttributes[11]);
   }
 
   void updateFromPigeon(ConversationData conversationData) {
@@ -200,10 +201,10 @@ class Conversation {
 
   /// Construct from a list of attributes.
   factory Conversation.fromObjectList(List<Object?> attributes) {
-    var conversation = Conversation(
-      attributes[0] as String,
-    );
+    final conversation = Conversation(attributes[0] as String);
+
     conversation.updateFromObjectsList(attributes);
+
     return conversation;
   }
 

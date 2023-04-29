@@ -1,3 +1,5 @@
+import 'package:twilio_conversations/src/utils/cast.dart';
+
 class MessageMedia {
   final String _sid;
   final String? _fileName;
@@ -48,8 +50,8 @@ class MessageMedia {
   factory MessageMedia.fromObjectList(List<Object?> attributes) {
     return MessageMedia(
       attributes[0] as String,
-      attributes[1] as String,
-      attributes[2] as String,
+      castString(attributes[1]),
+      castString(attributes[2]),
       attributes[3] as int,
     );
   }

@@ -9,21 +9,27 @@ class Participant {
   final Type type;
 
   Attributes _attributes;
+
   Attributes get attributes => _attributes;
 
   String? _dateCreated;
+
   String? get dateCreated => _dateCreated;
 
   String? _dateUpdated;
+
   String? get dateUpdated => _dateUpdated;
 
   String? _identity;
+
   String? get identity => _identity;
 
   int? _lastReadMessageIndex;
+
   int? get lastReadMessageIndex => _lastReadMessageIndex;
 
   String? _lastReadTimestamp;
+
   String? get lastReadTimestamp => _lastReadTimestamp;
 
   Participant(
@@ -56,9 +62,28 @@ class Participant {
     return participant;
   }
 
+  /// Construct from a list of attributes.
+  factory Participant.fromObjectList(List<Object?> attributes) {
+    final participant = Participant(
+      attributes[0] as String,
+      EnumToString.fromString(Type.values, attributes[2] as String) ??
+          Type.UNSET,
+      attributes[1] as String,
+      attributes[3] != null
+          ? Attributes.fromObjectList(attributes[3] as List<Object?>)
+          : Attributes(AttributesType.NULL, null),
+      attributes[4] as String,
+      attributes[5] as String,
+      attributes[6] as String,
+      attributes[7] as int,
+      attributes[8] as String,
+    );
+    return participant;
+  }
+
   factory Participant.fromPigeon(ParticipantData participantData) {
-    return Participant.fromMap(
-        Map<String, dynamic>.from(participantData.encode() as Map));
+    return Participant.fromObjectList(
+        participantData.encode() as List<Object?>);
   }
 
   Future<User?> getUser() async {

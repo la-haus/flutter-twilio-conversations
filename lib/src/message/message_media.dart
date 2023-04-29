@@ -24,6 +24,7 @@ class MessageMedia {
   int get size {
     return _size;
   }
+
   //#endregion
 
   MessageMedia(
@@ -40,6 +41,16 @@ class MessageMedia {
       map['fileName'],
       map['type'],
       map['size'],
+    );
+  }
+
+  /// Construct from a list of attributes.
+  factory MessageMedia.fromObjectList(List<Object?> attributes) {
+    return MessageMedia(
+      attributes[0] as String,
+      attributes[1] as String,
+      attributes[2] as String,
+      attributes[3] as int,
     );
   }
 }

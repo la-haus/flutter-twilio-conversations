@@ -175,7 +175,7 @@ class ConversationClient extends FlutterConversationClientApi {
     connectionState = EnumToString.fromString(
             ConnectionState.values, attributes[1] as String) ??
         ConnectionState.UNKNOWN;
-    _isReachabilityEnabled = attributes[2] as bool ?? false;
+    _isReachabilityEnabled = attributes[2] as bool;
   }
 
   /// Updates the authentication token for this client.
@@ -239,8 +239,7 @@ class ConversationClient extends FlutterConversationClientApi {
         return null;
       }
 
-      updateConversationFromMap(
-          Map<String, dynamic>.from(result.encode() as Map));
+      updateConversationFromObjectList(result.encode() as List<Object?>);
       return conversations[result.sid];
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
@@ -253,8 +252,9 @@ class ConversationClient extends FlutterConversationClientApi {
       final result = await TwilioConversations()
           .conversationsClientApi
           .getConversation(conversationSidOrUniqueName);
-      final conversationMap = Map<String, dynamic>.from(result.encode() as Map);
-      updateConversationFromMap(conversationMap);
+
+      updateConversationFromObjectList(result.encode() as List<Object?>);
+
       return conversations[result.sid];
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
@@ -280,12 +280,11 @@ class ConversationClient extends FlutterConversationClientApi {
       final conversationsMapList = result
           .whereType<
               ConversationData>() // converts list contents type to non-nullable
-          .map((ConversationData c) =>
-              Map<String, dynamic>.from(c.encode() as Map))
+          .map((ConversationData c) => c.encode() as List<Object?>)
           .toList();
 
       for (var element in conversationsMapList) {
-        updateConversationFromMap(element);
+        updateConversationFromObjectList(element);
       }
 
       return conversations.values.toList();
@@ -303,6 +302,16 @@ class ConversationClient extends FlutterConversationClientApi {
     }
   }
 
+  void updateConversationFromObjectList(List<Object?> attributes) {
+    var sid = attributes[0] as String;
+
+    if (conversations[sid] == null) {
+      conversations[sid] = Conversation.fromObjectList(attributes);
+    } else {
+      conversations[sid]?.updateFromObjectsList(attributes);
+    }
+  }
+
   //#endregion
 
   @override
@@ -312,9 +321,12 @@ class ConversationClient extends FlutterConversationClientApi {
     if (conversationSid == null) {
       return;
     }
-    updateConversationFromMap(
-        Map<String, dynamic>.from(conversationData.encode() as Map));
+
+    updateConversationFromObjectList(
+        conversationData.encode() as List<Object?>);
+
     final conversation = conversations[conversationSid];
+
     if (conversation != null) {
       _onConversationAddedCtrl.add(conversation);
     }
@@ -337,8 +349,9 @@ class ConversationClient extends FlutterConversationClientApi {
 
     final conversation = conversations[conversationSid];
     if (conversation != null) {
-      updateConversationFromMap(
-          Map<String, dynamic>.from(conversationData.encode() as Map));
+      updateConversationFromObjectList(
+          conversationData.encode() as List<Object?>);
+
       _onConversationUpdatedCtrl
           .add(ConversationUpdatedEvent(conversation, reason));
     }
@@ -371,9 +384,12 @@ class ConversationClient extends FlutterConversationClientApi {
     if (conversationSid == null) {
       return;
     }
-    updateConversationFromMap(
-        Map<String, dynamic>.from(conversationData.encode() as Map));
+
+    updateConversationFromObjectList(
+        conversationData.encode() as List<Object?>);
+
     final conversation = conversations[conversationSid];
+
     if (conversation != null) {
       _onConversationSynchronizationChangeCtrl.add(conversation);
     }

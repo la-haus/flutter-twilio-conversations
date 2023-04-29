@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/src/message/delivery_receipt.dart';
 import 'package:twilio_conversations/src/message/detailed_delivery_receipt.dart';
+import 'package:twilio_conversations/src/utils/cast.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Message {
@@ -69,9 +70,35 @@ class Message {
     return message;
   }
 
+  // Construct from a list of attributes
+  factory Message.fromObjectList(List<Object?> attributes) {
+    final message = Message(
+      attributes[0] as String,
+      attributes[2] as String,
+      DateTime.parse(attributes[10] as String),
+      DateTime.parse(attributes[11] as String),
+      castString(attributes[12]),
+      attributes[8] as String,
+      castString(attributes[3]),
+      attributes[4] as String,
+      castString(attributes[9]),
+      attributes[1] as int,
+      EnumToString.fromString(MessageType.values, attributes[5] as String) ??
+          MessageType.TEXT,
+      attributes[6] as bool,
+      attributes[7] != null
+          ? MessageMedia.fromObjectList(attributes[7] as List<Object?>)
+          : null,
+      attributes[13] != null
+          ? Attributes.fromObjectList(attributes[13] as List<Object?>)
+          : Attributes(AttributesType.NULL, null),
+    );
+
+    return message;
+  }
+
   factory Message.fromPigeon(MessageData messageData) {
-    return Message.fromMap(
-        Map<String, dynamic>.from(messageData.encode() as Map));
+    return Message.fromObjectList(messageData.encode() as List<Object?>);
   }
 
   Future<Conversation?> getConversation() async {

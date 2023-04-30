@@ -25,8 +25,8 @@ class DetailedDeliveryReceipt {
   factory DetailedDeliveryReceipt.fromPigeon(
     DetailedDeliveryReceiptData deliveryReceiptData,
   ) {
-    return DetailedDeliveryReceipt.fromMap(
-        Map<String, dynamic>.from(deliveryReceiptData.encode() as Map));
+    return DetailedDeliveryReceipt.fromObjectList(
+        deliveryReceiptData.encode() as List<Object?>);
   }
 
   factory DetailedDeliveryReceipt.fromMap(Map<String, dynamic> map) {

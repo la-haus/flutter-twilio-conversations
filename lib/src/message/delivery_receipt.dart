@@ -18,8 +18,8 @@ class DeliveryReceipt {
   final String sent;
 
   factory DeliveryReceipt.fromPigeon(DeliveryReceiptData deliveryReceiptData) {
-    return DeliveryReceipt.fromMap(
-        Map<String, dynamic>.from(deliveryReceiptData.encode() as Map));
+    return DeliveryReceipt.fromObjectList(
+        deliveryReceiptData.encode() as List<Object?>);
   }
 
   factory DeliveryReceipt.fromMap(Map<String, dynamic> map) {
@@ -30,6 +30,19 @@ class DeliveryReceipt {
       map['delivered'],
       map['failed'],
       map['sent'],
+    );
+    return deliveryReceipt;
+  }
+
+  /// Construct from a list of attributes.
+  factory DeliveryReceipt.fromObjectList(List<Object?> attributes) {
+    final deliveryReceipt = DeliveryReceipt(
+      attributes[0] as int,
+      attributes[1] as String,
+      attributes[2] as String,
+      attributes[3] as String,
+      attributes[4] as String,
+      attributes[5] as String,
     );
     return deliveryReceipt;
   }

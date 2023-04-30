@@ -1,6 +1,6 @@
 name: twilio_conversations
 description: A flutter plugin for Twilio Conversations.
-version: 0.1.0+1
+version: 0.2.0+1
 homepage: https://gitlab.com/twilio-flutter/conversations
 repository: https://gitlab.com/twilio-flutter/conversations
 issue_tracker: https://gitlab.com/twilio-flutter/conversations/issues

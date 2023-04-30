@@ -93,7 +93,7 @@ class Participant {
           .participantApi
           .getUser(conversationSid, sid);
 
-      return User.fromMap(Map<String, dynamic>.from(result.encode() as Map));
+      return User.fromObjectList(result.encode() as List<Object?>);
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }

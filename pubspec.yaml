@@ -22,7 +22,7 @@ dev_dependencies:
   lints: ^1.0.1
   mockito: ^5.0.16
   pigeon: 9.2.5
-  uuid: ^3.0.5
+  uuid: 3.0.7
 
 flutter:
   plugin:

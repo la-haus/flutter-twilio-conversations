@@ -1,6 +1,7 @@
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
+import 'package:twilio_conversations/src/utils/cast.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class User {
@@ -41,6 +42,7 @@ class User {
   Attributes get attributes {
     return _attributes;
   }
+
   //#endregion
 
   User(
@@ -67,8 +69,23 @@ class User {
     return user;
   }
 
+  /// Construct from a list of attributes.
+  factory User.fromObjectList(List<Object?> attributes) {
+    final user = User(
+      attributes[0] as String,
+      attributes[1] != null
+          ? Attributes.fromObjectList(attributes[1] as List<Object?>)
+          : Attributes(AttributesType.NULL, null),
+      castString(attributes[2]),
+      attributes[3] as bool,
+      attributes[4] as bool,
+      attributes[5] as bool,
+    );
+    return user;
+  }
+
   factory User.fromPigeon(UserData userData) {
-    return User.fromMap(Map<String, dynamic>.from(userData.encode() as Map));
+    return User.fromObjectList(userData.encode() as List<Object?>);
   }
 
   Future<void> setFriendlyName(String friendlyName) async {

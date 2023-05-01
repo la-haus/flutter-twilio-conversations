@@ -17,6 +17,7 @@ class Attributes {
   final AttributesType _type;
 
   final String? _json;
+
   //#endregion
 
   /// Returns attributes type
@@ -35,6 +36,14 @@ class Attributes {
     final type = EnumToString.fromString(AttributesType.values, map['type']) ??
         AttributesType.NULL;
     final json = map['data'];
+    return Attributes(type, json);
+  }
+
+  factory Attributes.fromObjectList(List<Object?> attributes) {
+    final type = EnumToString.fromString(
+            AttributesType.values, attributes[0] as String) ??
+        AttributesType.NULL;
+    final json = attributes[1] as String;
     return Attributes(type, json);
   }
 

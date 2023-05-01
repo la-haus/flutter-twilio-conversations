@@ -1,9 +1,10 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
-import 'package:collection/collection.dart';
 import 'package:twilio_conversations/api.dart';
+import 'package:twilio_conversations/src/utils/cast.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Conversation {
@@ -24,8 +25,11 @@ class Conversation {
   int? _lastReadMessageIndex;
 
   DateTime? get lastMessageDate => _lastMessageDate;
+
   int? get lastMessageIndex => _lastMessageIndex;
+
   int? get lastReadMessageIndex => _lastReadMessageIndex;
+
   //#endregion
 
   bool get hasMessages => lastMessageIndex != null;
@@ -96,6 +100,7 @@ class Conversation {
 
   final StreamController<Conversation> _onSynchronizationChangedCtrl =
       StreamController<Conversation>.broadcast();
+
   //#endregion
 
   /// Called when conversation synchronization status changed.
@@ -151,8 +156,38 @@ class Conversation {
     _lastMessageIndex = map['lastMessageIndex'] as int?;
   }
 
+  void updateFromObjectsList(List<Object?> objectAttributes) {
+    attributes = objectAttributes[1] == null
+        ? null
+        : Attributes.fromObjectList(objectAttributes[1] as List<Object?>);
+    uniqueName = castString(objectAttributes[2]);
+    friendlyName = castString(objectAttributes[3]);
+
+    status = EnumToString.fromString(
+            ConversationStatus.values, (objectAttributes[4] as String)) ??
+        ConversationStatus.UNKNOWN;
+
+    synchronizationStatus = EnumToString.fromString(
+            ConversationSynchronizationStatus.values,
+            objectAttributes[5] as String) ??
+        ConversationSynchronizationStatus.NONE;
+
+    dateCreated = objectAttributes[6] == null
+        ? null
+        : DateTime.parse(objectAttributes[6] as String);
+    createdBy = castString(objectAttributes[7]);
+    dateUpdated = objectAttributes[8] == null
+        ? null
+        : DateTime.parse(objectAttributes[8] as String);
+    _lastMessageDate = objectAttributes[9] == null
+        ? null
+        : DateTime.parse(objectAttributes[9] as String);
+    _lastReadMessageIndex = castInt(objectAttributes[10]);
+    _lastMessageIndex = castInt(objectAttributes[11]);
+  }
+
   void updateFromPigeon(ConversationData conversationData) {
-    updateFromMap(Map<String, dynamic>.from(conversationData.encode() as Map));
+    updateFromObjectsList(conversationData.encode() as List<Object?>);
   }
 
   /// Construct from a map.
@@ -161,6 +196,15 @@ class Conversation {
       map['sid'] as String,
     );
     conversation.updateFromMap(map);
+    return conversation;
+  }
+
+  /// Construct from a list of attributes.
+  factory Conversation.fromObjectList(List<Object?> attributes) {
+    final conversation = Conversation(attributes[0] as String);
+
+    conversation.updateFromObjectsList(attributes);
+
     return conversation;
   }
 
@@ -236,14 +280,14 @@ class Conversation {
           await TwilioConversations().conversationApi.getParticipantsList(sid);
 
       var participants = List.from(result)
-          .map((e) =>
-              Participant.fromMap(Map<String, dynamic>.from(e.encode() as Map)))
+          .map((e) => Participant.fromObjectList(e.encode() as List<Object?>))
           .toList();
       return participants;
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
   }
+
   //#endregion
 
   //#region Counts
@@ -285,6 +329,7 @@ class Conversation {
       throw TwilioConversations.convertException(err);
     }
   }
+
   //#endregion
 
   //#region Actions
@@ -324,6 +369,7 @@ class Conversation {
       throw TwilioConversations.convertException(err);
     }
   }
+
   //#endregion
 
   //#region Messages
@@ -334,7 +380,7 @@ class Conversation {
           .conversationApi
           .sendMessage(sid, optionsData);
 
-      return Message.fromMap(Map<String, dynamic>.from(result.encode() as Map));
+      return Message.fromObjectList(result.encode() as List<Object?>);
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
@@ -434,8 +480,8 @@ class Conversation {
 
       final messages = result
           .whereNotNull()
-          .map<Message>((i) =>
-              Message.fromMap(Map<String, dynamic>.from(i.encode() as Map)))
+          .map<Message>(
+              (i) => Message.fromObjectList(i.encode() as List<Object?>))
           .toList();
 
       return messages;
@@ -459,8 +505,8 @@ class Conversation {
 
       final messages = result
           .whereNotNull()
-          .map<Message>((i) =>
-              Message.fromMap(Map<String, dynamic>.from(i.encode() as Map)))
+          .map<Message>(
+              (i) => Message.fromObjectList(i.encode() as List<Object?>))
           .toList();
 
       return messages;
@@ -480,8 +526,8 @@ class Conversation {
 
       final messages = result
           .whereNotNull()
-          .map<Message>((i) =>
-              Message.fromMap(Map<String, dynamic>.from(i.encode() as Map)))
+          .map<Message>(
+              (i) => Message.fromObjectList(i.encode() as List<Object?>))
           .toList();
 
       return messages;
@@ -516,6 +562,7 @@ class Conversation {
       throw TwilioConversations.convertException(err);
     }
   }
+
   //#endregion
 
   //#region Setters
@@ -561,6 +608,7 @@ class Conversation {
       throw TwilioConversations.convertException(err);
     }
   }
+
   //#endregion
 
   void messageAdded(MessageData messageData) {

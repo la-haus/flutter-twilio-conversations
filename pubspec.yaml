@@ -6,7 +6,7 @@ repository: https://gitlab.com/twilio-flutter/conversations
 issue_tracker: https://gitlab.com/twilio-flutter/conversations/issues
 
 environment:
-  sdk: 2.19.6
+  sdk: ">=2.18.0"
   flutter: 3.7.10
 
 dependencies:

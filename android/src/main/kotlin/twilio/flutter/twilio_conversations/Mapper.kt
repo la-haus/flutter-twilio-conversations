@@ -1,6 +1,7 @@
 package twilio.flutter.twilio_conversations
 
 import com.twilio.conversations.*
+import com.twilio.conversations.extensions.channelType
 import com.twilio.util.ErrorInfo
 import java.text.SimpleDateFormat
 import java.util.Date

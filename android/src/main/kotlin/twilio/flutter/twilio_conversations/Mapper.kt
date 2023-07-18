@@ -1,6 +1,7 @@
 package twilio.flutter.twilio_conversations
 
 import com.twilio.conversations.*
+import com.twilio.conversations.extensions.channelType
 import com.twilio.util.ErrorInfo
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -135,7 +136,7 @@ object Mapper {
         result.dateCreated = participant.dateCreated
         result.dateUpdated = participant.dateUpdated
         result.identity = participant.identity
-        result.type = participant.type.toString()
+        result.type = participant.channelType.toString()
         result.attributes = attributesToPigeon(participant.attributes)
         return result
     }

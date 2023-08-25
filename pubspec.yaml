@@ -7,7 +7,7 @@ issue_tracker: https://gitlab.com/twilio-flutter/conversations/issues
 
 environment:
   sdk: ">=2.18.0"
-  flutter: 3.7.10
+  flutter: 3.10.6
 
 dependencies:
   flutter:

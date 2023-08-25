@@ -12,7 +12,7 @@ class ConversationsPage extends StatefulWidget {
   });
 
   @override
-  _ConversationsPageState createState() => _ConversationsPageState();
+  State<ConversationsPage> createState() => _ConversationsPageState();
 }
 
 class _ConversationsPageState extends State<ConversationsPage> {

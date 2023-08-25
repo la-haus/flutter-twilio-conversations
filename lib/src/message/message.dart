@@ -125,6 +125,7 @@ class Message {
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
+    return null;
   }
 
   Future<Participant?> getParticipant() async {

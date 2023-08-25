@@ -54,6 +54,7 @@ class MyApp extends StatelessWidget {
                         //             identity: conversationsNotifier.identity)))
                         //     ?.token;
 
+                        // ignore: unnecessary_null_comparison
                         if (jwtToken == null) {
                           return;
                         }
@@ -76,6 +77,7 @@ class MyApp extends StatelessWidget {
                         //             identity: conversationsNotifier.identity)))
                         //     ?.token; // <Set your JWT token here>
 
+                        // ignore: unnecessary_null_comparison
                         if (jwtToken == null) {
                           return;
                         }

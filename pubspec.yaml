@@ -7,21 +7,22 @@ issue_tracker: https://gitlab.com/twilio-flutter/conversations/issues
 
 environment:
   sdk: ">=2.18.0"
-  flutter: 3.7.10
+  flutter: 3.10.6
 
 dependencies:
   flutter:
     sdk: flutter
-  enum_to_string: ^2.0.1
+  enum_to_string: 2.0.1
+  # setting an explicit dependency for this generates compile time errors
   collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: 2.3.3
-  lints: 2.0.1
-  mockito: ^5.0.16
-  pigeon: 9.2.5
+  build_runner: 2.4.6
+  lints: 2.1.1
+  mockito: 5.4.2
+  pigeon: 10.1.6
   uuid: 3.0.7
 
 flutter:

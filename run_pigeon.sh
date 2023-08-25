@@ -1,4 +1,4 @@
-flutter pub run pigeon \
+dart run pigeon \
   --input pigeons/api.dart \
   --dart_out lib/api.dart \
   --objc_header_out ios/Classes/api.h \

@@ -20,20 +20,20 @@ dependencies:
     # the parent directory to use the current plugin's version.
     path: ../
 
-  cupertino_icons: ^1.0.0
-  enum_to_string: ^2.0.1
-  provider: ^6.0.0
-  http: ^0.13.3
-  intl: ^0.17.0
-  mime_type: ^1.0.0
-  firebase_core: 2.6.1
-  firebase_messaging: 14.2.4
-  image_picker: ^0.8.4+2
+  cupertino_icons: 1.0.5
+  enum_to_string: 2.0.1
+  provider: 6.0.5
+  http: 1.1.0
+  intl: 0.18.1
+  mime_type: 1.0.0
+  firebase_core: 2.15.1
+  firebase_messaging: 14.6.6
+  image_picker: 1.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  lints: ^1.0.1
+  lints: 2.1.1
 
 flutter:
   uses-material-design: true

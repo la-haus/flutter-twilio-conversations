@@ -12,7 +12,7 @@ class MessagesPage extends StatefulWidget {
   MessagesPage(this.conversation, this.client);
 
   @override
-  _MessagesPageState createState() => _MessagesPageState();
+  State<MessagesPage> createState() => _MessagesPageState();
 }
 
 class _MessagesPageState extends State<MessagesPage> {
@@ -300,10 +300,10 @@ class _MessagesPageState extends State<MessagesPage> {
   }
 
   Widget _buildParticipantsTyping(MessagesNotifier messagesNotifier) {
-    final _currentlyTypingParticipants = messagesNotifier.currentlyTyping;
+    final currentlyTypingParticipants = messagesNotifier.currentlyTyping;
 
-    return _currentlyTypingParticipants.isNotEmpty
-        ? Text('${_currentlyTypingParticipants.join(', ')} is typing...')
+    return currentlyTypingParticipants.isNotEmpty
+        ? Text('${currentlyTypingParticipants.join(', ')} is typing...')
         : Container();
   }
 

@@ -201,6 +201,7 @@ class MessagesNotifier extends ChangeNotifier {
       }
       return currentAttributes;
     }
+    return null;
   }
 
   Future<void> swapMessageAttributes(

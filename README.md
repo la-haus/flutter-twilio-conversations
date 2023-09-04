@@ -1,3 +1,12 @@
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+⚠️ ⚠️
+We are no longer supporting this library. Feel free to fork it and work on your own branch.
+⚠️ ⚠️
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
 # twilio_conversations
 
 Flutter plugin for [Twilio Conversations](https://www.twilio.com/docs/conversations) "Build conversational, cross-channel messaging through a few API calls with Twilio Conversations."
